@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Turbo and Build outputs
+.turbo/
+dist/
+build/
+.next/
+out/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Environment variables
+.env
+.env*.local
+.env.production
+.env.development
+!.env.example
+!.env.*.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Storage / Local data
+.storage/
+.data/
+.test-storage/
+coverage/
+
+# TypeScript build info cache
+*.tsbuildinfo
+

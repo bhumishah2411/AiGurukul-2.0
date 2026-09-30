@@ -1,0 +1,20 @@
+{
+  "name": "@ai-gurukul/validation",
+  "version": "1.0.0",
+  "description": "Shared Zod validation schemas and helpers for AI Gurukul",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@ai-gurukul/types": "*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5"
+  }
+}

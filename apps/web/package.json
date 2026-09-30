@@ -1,0 +1,30 @@
+{
+  "name": "@ai-gurukul/web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Gurukul – Ancient Wisdom for Modern Life (Next.js Frontend)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf .next"
+  },
+  "dependencies": {
+    "@ai-gurukul/types": "*",
+    "@ai-gurukul/validation": "*",
+    "next": "14.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.3",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5"
+  }
+}

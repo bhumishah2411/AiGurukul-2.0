@@ -1,0 +1,23 @@
+{
+  "name": "@ai-gurukul/database",
+  "version": "1.0.0",
+  "description": "Mongoose connection manager, base repository, schemas, and migration engine",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@ai-gurukul/config": "*",
+    "@ai-gurukul/logging": "*",
+    "@ai-gurukul/types": "*",
+    "mongoose": "^8.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5"
+  }
+}

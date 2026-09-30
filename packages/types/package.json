@@ -1,0 +1,16 @@
+{
+  "name": "@ai-gurukul/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript domain entities, DTOs, and interfaces for AI Gurukul",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5"
+  }
+}

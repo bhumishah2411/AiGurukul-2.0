@@ -1,0 +1,22 @@
+{
+  "name": "@ai-gurukul/logging",
+  "version": "1.0.0",
+  "description": "Structured logging library for AI Gurukul with correlation ID propagation",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "pino": "^9.1.2",
+    "pino-http": "^10.1.0",
+    "pino-pretty": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5"
+  }
+}

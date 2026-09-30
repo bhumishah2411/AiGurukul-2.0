@@ -1,0 +1,21 @@
+{
+  "name": "@ai-gurukul/embeddings",
+  "version": "1.0.0",
+  "description": "Abstract embedding provider interface and implementations for AI Gurukul",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@ai-gurukul/types": "*"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

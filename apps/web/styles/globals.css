@@ -1,0 +1,101 @@
+:root {
+  --bg-obsidian: #0D0B08;
+  --surface-stone: #211D12;
+  --surface-wood: #2A2515;
+  --text-vellum: #EDE8D5;
+  --text-dust: #9A9078;
+  
+  --gold-sacred: #D4AF37;
+  --gold-radiance: #F2D675;
+  --gold-antique: #8B6914;
+
+  --accent-krishna: #7B68EE;
+  --accent-chanakya: #C46B3A;
+  --accent-vaidya: #3A9B8C;
+
+  --font-serif: 'Cinzel', serif, system-ui;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-obsidian);
+  color: var(--text-vellum);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--gold-sacred);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--gold-radiance);
+}
+
+.temple-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.temple-card {
+  background: var(--surface-stone);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.temple-card:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  transform: translateY(-2px);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, var(--gold-radiance) 0%, var(--gold-sacred) 50%, var(--gold-antique) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-sacred {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--gold-sacred) 0%, var(--gold-antique) 100%);
+  color: #0D0B08;
+  font-weight: 600;
+  padding: 0.65rem 1.4rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.btn-sacred:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 9999px;
+  border: 1px solid var(--gold-antique);
+  color: var(--gold-radiance);
+  background: rgba(212, 175, 55, 0.08);
+}
