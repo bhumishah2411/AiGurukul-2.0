@@ -99,3 +99,57 @@ a:hover {
   color: var(--gold-radiance);
   background: rgba(212, 175, 55, 0.08);
 }
+
+.input-sacred {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-obsidian);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 6px;
+  color: var(--text-vellum);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-sacred:focus {
+  border-color: var(--gold-sacred);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}
+
+.btn-outline-sacred {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--gold-radiance);
+  font-weight: 600;
+  padding: 0.6rem 1.3rem;
+  border-radius: 6px;
+  border: 1px solid var(--gold-sacred);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-outline-sacred:hover {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold-radiance);
+  color: #ffffff;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gold-radiance);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.03em;
+}
+

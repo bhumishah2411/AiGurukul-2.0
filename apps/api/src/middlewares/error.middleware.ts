@@ -28,14 +28,15 @@ export function createErrorMiddleware(logger: Logger) {
     }
 
     // 2. Zod Validation Error
-    if (err instanceof ZodError) {
-      logger.warn({ issues: err.issues, reqId }, 'Validation failed');
+    if (err instanceof ZodError || (err as any)?.name === 'ZodError') {
+      const zodErr = err as ZodError;
+      logger.warn({ issues: zodErr.issues, reqId }, 'Validation failed');
       res.status(422).json({
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
           message: 'The submitted request data failed schema validation',
-          details: err.flatten(),
+          details: typeof zodErr.flatten === 'function' ? zodErr.flatten() : zodErr,
           requestId: reqId,
         },
       });

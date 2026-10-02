@@ -28,6 +28,8 @@ export const ApiEnvSchema = CommonEnvSchema.extend({
   STORAGE_PROVIDER: z.enum(['local', 's3']).default('local'),
 
   // Optional External Keys
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
