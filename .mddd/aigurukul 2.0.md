@@ -1,18 +1,12 @@
 aigurukul 2.0
 
-
-
-**MASTER PROMPT :** 
+**MASTER PROMPT :**
 
 You are the lead software architect and senior full-stack engineer responsible for rebuilding AI Gurukul from scratch as a production-quality software product.
-
-
 
 IMPORTANT:
 
 This is a NEW production rebuild.
-
-
 
 Do NOT modify or patch the existing AI Gurukul implementation.
 
@@ -20,11 +14,7 @@ Do NOT reuse the existing backend architecture.
 
 Do NOT create a temporary prototype that will later need a major rewrite.
 
-
-
 Build the system with production-quality architecture from the beginning, while using free/local infrastructure wherever possible during development.
-
-
 
 ==================================================
 
@@ -32,25 +22,15 @@ PRODUCT
 
 ==================================================
 
-
-
 Product name:
 
 AI Gurukul – Ancient Wisdom for Modern Life
 
-
-
 Purpose:
-
-
 
 AI Gurukul is an AI-powered guidance and learning platform that helps users explore Indian wisdom and apply it to modern-life situations.
 
-
-
 Core knowledge domains include:
-
-
 
 \- Bhagavad Gita / Krishna
 
@@ -68,11 +48,7 @@ Core knowledge domains include:
 
 \- Classical Indian texts
 
-
-
 The platform should provide:
-
-
 
 1\. AI wisdom guidance
 
@@ -102,23 +78,15 @@ The platform should provide:
 
 14\. User history and personalization
 
-
-
 ==================================================
 
 NON-NEGOTIABLE ARCHITECTURE
 
 ==================================================
 
-
-
 Use a monorepo.
 
-
-
 The main applications MUST be:
-
-
 
 apps/
 
@@ -128,8 +96,6 @@ apps/
 
 &#x20; worker/
 
-
-
 web:
 
 \- Next.js
@@ -138,8 +104,6 @@ web:
 
 \- TypeScript
 
-
-
 api:
 
 \- Node.js
@@ -147,8 +111,6 @@ api:
 \- Express.js
 
 \- TypeScript
-
-
 
 worker:
 
@@ -160,19 +122,11 @@ worker:
 
 \- Redis
 
-
-
 IMPORTANT:
-
-
 
 The BullMQ worker MUST be separate from the API process.
 
-
-
 The API must NOT execute long-running background jobs directly.
-
-
 
 ==================================================
 
@@ -180,19 +134,11 @@ DATABASE
 
 ==================================================
 
-
-
 USE:
-
-
 
 MongoDB + Mongoose
 
-
-
 DO NOT USE:
-
-
 
 \- PostgreSQL
 
@@ -200,23 +146,13 @@ DO NOT USE:
 
 \- SQL database
 
-
-
 MongoDB is the primary application database.
-
-
 
 Mongoose is the ODM.
 
-
-
 Design proper Mongoose schemas, indexes, validation and repository abstractions.
 
-
-
 Potential collections include:
-
-
 
 \- users
 
@@ -246,15 +182,9 @@ Potential collections include:
 
 \- source metadata
 
-
-
 Do not create every collection blindly.
 
-
-
 Only create collections when required by the corresponding feature.
-
-
 
 ==================================================
 
@@ -262,41 +192,23 @@ VECTOR DATABASE
 
 ==================================================
 
-
-
 Use Pinecone as the vector database abstraction.
-
-
 
 However, DO NOT tightly couple application code to Pinecone.
 
-
-
 Create a vector database provider interface.
-
-
 
 Example concept:
 
-
-
 VectorStoreProvider
 
-
-
 Possible implementations:
-
-
 
 \- LocalVectorStoreProvider
 
 \- PineconeVectorStoreProvider
 
-
-
 The application should depend on the interface rather than directly on Pinecone.
-
-
 
 ==================================================
 
@@ -304,23 +216,13 @@ AI PROVIDER ABSTRACTION
 
 ==================================================
 
-
-
 Do NOT tightly couple the application to a single LLM provider.
-
-
 
 Create:
 
-
-
 AIProvider
 
-
-
 Possible implementations:
-
-
 
 \- LocalAIProvider
 
@@ -328,15 +230,9 @@ Possible implementations:
 
 \- OpenAIProvider
 
-
-
 The initial development environment should support free/local options wherever practical.
 
-
-
 The architecture must allow changing the provider without rewriting business logic.
-
-
 
 ==================================================
 
@@ -344,19 +240,11 @@ EMBEDDING PROVIDER
 
 ==================================================
 
-
-
 Create:
-
-
 
 EmbeddingProvider
 
-
-
 Possible implementations:
-
-
 
 \- LocalEmbeddingProvider
 
@@ -364,11 +252,7 @@ Possible implementations:
 
 \- OpenAIEmbeddingProvider
 
-
-
 Do not place provider-specific embedding logic inside controllers or services.
-
-
 
 ==================================================
 
@@ -376,37 +260,21 @@ OBJECT STORAGE
 
 ==================================================
 
-
-
 Uploaded documents must NOT be processed directly from arbitrary API memory/storage.
-
-
 
 Introduce an object-storage abstraction.
 
-
-
 Create:
-
-
 
 ObjectStorageProvider
 
-
-
 Possible implementations:
-
-
 
 \- LocalObjectStorageProvider
 
 \- S3CompatibleObjectStorageProvider
 
-
-
 Uploaded files should follow this general lifecycle:
-
-
 
 Upload
 
@@ -446,19 +314,13 @@ Vector database
 
 Source metadata / citations
 
-
-
 ==================================================
 
 SHARED PACKAGES
 
 ==================================================
 
-
-
 Create shared packages for:
-
-
 
 packages/
 
@@ -480,19 +342,11 @@ packages/
 
 &#x20; logging/
 
-
-
 Use these packages wherever appropriate.
-
-
 
 The exact package structure can be adjusted if there is a strong architectural reason.
 
-
-
 Avoid duplicate schemas and types across web/api/worker.
-
-
 
 ==================================================
 
@@ -500,23 +354,13 @@ VALIDATION
 
 ==================================================
 
-
-
 Use Zod for request and data validation.
-
-
 
 Validation should happen at system boundaries.
 
-
-
 Do not trust client-side validation alone.
 
-
-
 Shared Zod schemas should live in the shared validation package where appropriate.
-
-
 
 ==================================================
 
@@ -524,43 +368,29 @@ API ARCHITECTURE
 
 ==================================================
 
-
-
 Use:
-
-
 
 Controller
 
-&#x20;   ↓
+&#x20; ↓
 
 Service
 
-&#x20;   ↓
+&#x20; ↓
 
 Repository
 
-&#x20;   ↓
+&#x20; ↓
 
 Database
 
-
-
 Controllers should remain thin.
-
-
 
 Business logic belongs in services.
 
-
-
 Database access belongs in repositories.
 
-
-
 Do not put MongoDB queries directly inside controllers.
-
-
 
 ==================================================
 
@@ -568,11 +398,7 @@ AUTHENTICATION
 
 ==================================================
 
-
-
 Support:
-
-
 
 \- Email/password authentication
 
@@ -582,15 +408,9 @@ Support:
 
 \- JWT/session-based authentication according to the finalized architecture
 
-
-
 Prefer secure httpOnly cookies for browser authentication.
 
-
-
 Use:
-
-
 
 \- Secure cookies in production
 
@@ -604,15 +424,9 @@ Use:
 
 \- Authorization checks
 
-
-
 Never store plaintext passwords.
 
-
-
 Never commit secrets.
-
-
 
 ==================================================
 
@@ -620,11 +434,7 @@ REDIS + BULLMQ
 
 ==================================================
 
-
-
 Redis is used for:
-
-
 
 \- caching
 
@@ -634,11 +444,7 @@ Redis is used for:
 
 \- rate limiting where appropriate
 
-
-
 BullMQ worker handles long-running operations such as:
-
-
 
 \- document ingestion
 
@@ -652,11 +458,7 @@ BullMQ worker handles long-running operations such as:
 
 \- potentially AI-heavy asynchronous tasks
 
-
-
 API should enqueue jobs and return appropriate job status information.
-
-
 
 ==================================================
 
@@ -664,15 +466,9 @@ RAG
 
 ==================================================
 
-
-
 RAG must be source-grounded.
 
-
-
 The system must track:
-
-
 
 \- source document
 
@@ -688,19 +484,11 @@ The system must track:
 
 \- relevance information where appropriate
 
-
-
 AI responses should be able to return citations/source references.
-
-
 
 Never make RAG a black box.
 
-
-
 The architecture must preserve traceability from:
-
-
 
 Answer
 
@@ -710,19 +498,13 @@ Answer
 
 → Original document
 
-
-
 ==================================================
 
 OBSERVABILITY
 
 ==================================================
 
-
-
 Implement from Phase 1:
-
-
 
 \- structured logging
 
@@ -738,15 +520,9 @@ Implement from Phase 1:
 
 \- centralized error handling
 
-
-
 Every API request should have a traceable request ID.
 
-
-
 Logs should be structured rather than random console.log statements.
-
-
 
 ==================================================
 
@@ -754,15 +530,9 @@ TESTING
 
 ==================================================
 
-
-
 Testing starts in Phase 1.
 
-
-
 Required testing layers:
-
-
 
 1\. Unit tests
 
@@ -770,15 +540,9 @@ Required testing layers:
 
 3\. End-to-end tests
 
-
-
 Do not postpone testing until the end of the project.
 
-
-
 Each phase must add tests for the functionality introduced in that phase.
-
-
 
 ==================================================
 
@@ -786,19 +550,11 @@ DATABASE MIGRATIONS + SEEDING
 
 ==================================================
 
-
-
 MongoDB does not use SQL migrations in the same way as PostgreSQL.
-
-
 
 Therefore implement a MongoDB-compatible migration/versioning mechanism.
 
-
-
 Requirements:
-
-
 
 \- versioned database migration scripts
 
@@ -812,11 +568,7 @@ Requirements:
 
 \- safe production behavior
 
-
-
 Do NOT introduce Prisma or SQL migration tooling.
-
-
 
 ==================================================
 
@@ -824,11 +576,7 @@ SECURITY
 
 ==================================================
 
-
-
 Implement production security practices throughout the project:
-
-
 
 \- Zod validation
 
@@ -860,101 +608,65 @@ Implement production security practices throughout the project:
 
 \- authorization checks
 
-
-
 ==================================================
 
 FRONTEND DESIGN
 
 ==================================================
 
-
-
 Visual identity:
-
-
 
 Obsidian Temple + Vedic Sacred Gold.
 
-
-
 Primary colors:
-
-
 
 Background:
 
 \#0D0B08
 
-
-
 Surface:
 
 \#211D12
-
-
 
 Secondary surface:
 
 \#2A2515
 
-
-
 Text:
 
 \#EDE8D5
-
-
 
 Muted text:
 
 \#9A9078
 
-
-
 Gold:
 
 \#D4AF37
-
-
 
 Gold light:
 
 \#F2D675
 
-
-
 Gold dim:
 
 \#8B6914
 
-
-
 Persona accents:
-
-
 
 Krishna:
 
 \#7B68EE
 
-
-
 Chanakya:
 
 \#C46B3A
-
-
 
 Guru/Vaidya:
 
 \#3A9B8C
 
-
-
 The UI should feel:
-
-
 
 \- premium
 
@@ -972,11 +684,7 @@ The UI should feel:
 
 \- professional
 
-
-
 Avoid excessive gradients, unnecessary animations and generic AI-dashboard styling.
-
-
 
 ==================================================
 
@@ -984,71 +692,47 @@ CORE FEATURES
 
 ==================================================
 
-
-
 The final application should contain:
-
-
 
 PHASE 1
 
 Foundation + architecture + observability + testing
 
-
-
 PHASE 2
 
 Authentication
-
-
 
 PHASE 3
 
 Wisdom guidance + AI streaming
 
-
-
 PHASE 4A
 
 Ayurveda
-
-
 
 PHASE 4B
 
 Knowledge graph
 
-
-
 PHASE 5A
 
 RAG infrastructure
-
-
 
 PHASE 5B
 
 Dynamic quizzes
 
-
-
 PHASE 6
 
 Gamification
-
-
 
 PHASE 7
 
 Languages + manuscript translation
 
-
-
 PHASE 8
 
 Production hardening + deployment
-
-
 
 ==================================================
 
@@ -1056,19 +740,11 @@ DEVELOPMENT PRINCIPLE
 
 ==================================================
 
-
-
 DO NOT BUILD EVERYTHING AT ONCE.
-
-
 
 Work strictly phase-by-phase.
 
-
-
 Before implementing a phase:
-
-
 
 1\. Understand existing architecture.
 
@@ -1080,11 +756,7 @@ Before implementing a phase:
 
 5\. Implement only that phase.
 
-
-
 After implementation:
-
-
 
 1\. Run formatting.
 
@@ -1106,23 +778,13 @@ After implementation:
 
 10\. Verify security-sensitive code.
 
-
-
 Then provide a completion report.
-
-
 
 STOP.
 
-
-
 WAIT FOR USER APPROVAL.
 
-
-
 Do NOT automatically continue to the next phase.
-
-
 
 ==================================================
 
@@ -1130,11 +792,7 @@ IMPORTANT
 
 ==================================================
 
-
-
 Never:
-
-
 
 \- use PostgreSQL
 
@@ -1166,35 +824,19 @@ Never:
 
 \- build all phases in one step
 
-
-
 MongoDB + Mongoose is the ONLY primary database choice.
-
-
 
 Start with Phase 0 only.
 
-
-
 Do not implement Phase 1 until Phase 0 is reviewed and approved.
-
-
 
 **PHASE 0 :** ARCHITECTURE PLANNING
 
-
-
 Do NOT write production application code yet.
-
-
 
 Your task is to inspect the current project/environment and produce the finalized implementation architecture for AI Gurukul.
 
-
-
 The architecture MUST use:
-
-
 
 \- MongoDB
 
@@ -1224,11 +866,7 @@ The architecture MUST use:
 
 \- object storage interface
 
-
-
 Do NOT use PostgreSQL or Prisma.
-
-
 
 ==================================================
 
@@ -1236,47 +874,41 @@ TASKS
 
 ==================================================
 
-
-
 1\. Define the complete monorepo structure.
 
-
-
 Expected high-level structure:
-
-
 
 /
 
 ├── apps/
 
-│   ├── web/
+│ ├── web/
 
-│   ├── api/
+│ ├── api/
 
-│   └── worker/
+│ └── worker/
 
 │
 
 ├── packages/
 
-│   ├── types/
+│ ├── types/
 
-│   ├── validation/
+│ ├── validation/
 
-│   ├── config/
+│ ├── config/
 
-│   ├── database/
+│ ├── database/
 
-│   ├── ai/
+│ ├── ai/
 
-│   ├── embeddings/
+│ ├── embeddings/
 
-│   ├── vector-store/
+│ ├── vector-store/
 
-│   ├── storage/
+│ ├── storage/
 
-│   └── logging/
+│ └── logging/
 
 │
 
@@ -1290,15 +922,9 @@ Expected high-level structure:
 
 └── README.md
 
-
-
 You may improve this structure if there is a strong reason.
 
-
-
 2\. Define responsibilities of:
-
-
 
 web
 
@@ -1324,11 +950,7 @@ storage
 
 logging
 
-
-
 3\. Define API architecture:
-
-
 
 Routes
 
@@ -1340,15 +962,9 @@ Routes
 
 → Mongoose
 
-
-
 4\. Define MongoDB collections.
 
-
-
 For each collection explain:
-
-
 
 \- purpose
 
@@ -1360,31 +976,17 @@ For each collection explain:
 
 \- whether it is required now or later
 
-
-
 5\. Define the MongoDB migration/versioning strategy.
-
-
 
 6\. Define seed-data strategy.
 
-
-
 7\. Define authentication architecture.
-
-
 
 8\. Define Redis architecture.
 
-
-
 9\. Define BullMQ queues and workers.
 
-
-
 10\. Define provider interfaces:
-
-
 
 AIProvider
 
@@ -1394,19 +996,11 @@ VectorStoreProvider
 
 ObjectStorageProvider
 
-
-
 11\. Define RAG data flow.
-
-
 
 12\. Define citation/source tracking model.
 
-
-
 13\. Define observability:
-
-
 
 \- structured logs
 
@@ -1418,11 +1012,7 @@ ObjectStorageProvider
 
 \- error handling
 
-
-
 14\. Define testing strategy:
-
-
 
 \- unit
 
@@ -1430,27 +1020,15 @@ ObjectStorageProvider
 
 \- E2E
 
-
-
 15\. Define local-development infrastructure.
-
-
 
 Prefer free/local infrastructure.
 
-
-
 16\. Define production infrastructure separately.
-
-
 
 17\. Define environment variables.
 
-
-
 Separate:
-
-
 
 development
 
@@ -1458,11 +1036,7 @@ test
 
 production
 
-
-
 18\. Define security architecture.
-
-
 
 ==================================================
 
@@ -1470,15 +1044,9 @@ IMPORTANT
 
 ==================================================
 
-
-
 Do not implement the application yet.
 
-
-
 Produce:
-
-
 
 1\. Architecture diagram
 
@@ -1504,31 +1072,17 @@ Produce:
 
 12\. Phase-by-phase implementation plan
 
-
-
 Then STOP.
-
-
 
 Wait for approval.
 
-
-
 ANS : RETURNED THE ARCHITECTURE FLOW
-
-
 
 **PHASE 1 : FOUNDATION**
 
-
-
 Implement ONLY Phase 1.
 
-
-
 Do not implement authentication, wisdom, Ayurveda, RAG, quizzes, games, translation or other future features yet.
-
-
 
 ==================================================
 
@@ -1536,11 +1090,7 @@ GOAL
 
 ==================================================
 
-
-
 Create the production-ready foundation of the AI Gurukul monorepo.
-
-
 
 ==================================================
 
@@ -1548,11 +1098,7 @@ MONOREPO
 
 ==================================================
 
-
-
 Create:
-
-
 
 apps/
 
@@ -1561,8 +1107,6 @@ apps/
 &#x20; api/
 
 &#x20; worker/
-
-
 
 packages/
 
@@ -1584,11 +1128,7 @@ packages/
 
 &#x20; logging/
 
-
-
 Configure:
-
-
 
 \- package manager
 
@@ -1604,31 +1144,19 @@ Configure:
 
 \- shared configs
 
-
-
 ==================================================
 
 DATABASE
 
 ==================================================
 
-
-
 Set up:
-
-
 
 MongoDB + Mongoose
 
-
-
 Create the database package.
 
-
-
 Implement:
-
-
 
 \- MongoDB connection
 
@@ -1640,13 +1168,9 @@ Implement:
 
 \- environment validation
 
-
-
 Do NOT use PostgreSQL.
 
 Do NOT use Prisma.
-
-
 
 ==================================================
 
@@ -1654,15 +1178,9 @@ MIGRATIONS
 
 ==================================================
 
-
-
 Implement MongoDB migration/versioning infrastructure.
 
-
-
 Implement:
-
-
 
 \- migration runner
 
@@ -1672,11 +1190,7 @@ Implement:
 
 \- development seed runner
 
-
-
 Do not create feature-specific collections unless required by the foundation.
-
-
 
 ==================================================
 
@@ -1684,19 +1198,11 @@ CONFIG
 
 ==================================================
 
-
-
 Create centralized configuration using environment variables.
-
-
 
 Validate environment variables using Zod.
 
-
-
 Separate:
-
-
 
 .env.example
 
@@ -1706,11 +1212,7 @@ test
 
 production
 
-
-
 Never expose secrets to the frontend.
-
-
 
 ==================================================
 
@@ -1718,15 +1220,9 @@ API
 
 ==================================================
 
-
-
 Create Express API foundation.
 
-
-
 Implement:
-
-
 
 \- application bootstrap
 
@@ -1748,35 +1244,21 @@ Implement:
 
 \- graceful shutdown
 
-
-
 ==================================================
 
 HEALTH
 
 ==================================================
 
-
-
 Create:
-
-
 
 GET /health
 
-
-
 GET /ready
-
-
 
 Health should confirm the process is running.
 
-
-
 Readiness should verify required dependencies such as MongoDB and Redis.
-
-
 
 ==================================================
 
@@ -1784,23 +1266,13 @@ WORKER
 
 ==================================================
 
-
-
 Create a separate worker application.
-
-
 
 Connect worker to Redis/BullMQ.
 
-
-
 The worker MUST run independently from the API.
 
-
-
 Create the basic queue infrastructure but do not implement RAG jobs yet.
-
-
 
 ==================================================
 
@@ -1808,15 +1280,9 @@ REDIS
 
 ==================================================
 
-
-
 Create Redis configuration and shared connection utilities.
 
-
-
 Prepare BullMQ infrastructure.
-
-
 
 ==================================================
 
@@ -1824,11 +1290,7 @@ PROVIDER INTERFACES
 
 ==================================================
 
-
-
 Create interfaces only for now:
-
-
 
 AIProvider
 
@@ -1838,15 +1300,9 @@ VectorStoreProvider
 
 ObjectStorageProvider
 
-
-
 Add placeholder/local implementations where useful.
 
-
-
 Do not integrate paid providers yet.
-
-
 
 ==================================================
 
@@ -1854,19 +1310,11 @@ STORAGE
 
 ==================================================
 
-
-
 Create object storage abstraction.
-
-
 
 Implement a local development storage provider.
 
-
-
 Do not directly upload/process documents in the API.
-
-
 
 ==================================================
 
@@ -1874,11 +1322,7 @@ TESTING
 
 ==================================================
 
-
-
 Set up:
-
-
 
 \- unit testing
 
@@ -1886,11 +1330,7 @@ Set up:
 
 \- E2E testing
 
-
-
 Create initial tests for:
-
-
 
 \- configuration validation
 
@@ -1906,19 +1346,13 @@ Create initial tests for:
 
 \- worker startup
 
-
-
 ==================================================
 
 QUALITY GATES
 
 ==================================================
 
-
-
 Run:
-
-
 
 \- formatting
 
@@ -1934,15 +1368,9 @@ Run:
 
 \- production builds
 
-
-
 Fix all errors.
 
-
-
 Then provide:
-
-
 
 1\. Files created
 
@@ -1964,11 +1392,6 @@ Then provide:
 
 10\. Known limitations
 
-
-
 STOP.
 
-
-
 Wait for approval before Phase 2.
-
