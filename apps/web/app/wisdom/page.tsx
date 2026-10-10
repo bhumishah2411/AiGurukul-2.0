@@ -261,8 +261,8 @@ export default function WisdomChatPage() {
         maxWidth: '1350px',
       }}
     >
-      {/* Top Header */}
-      <header
+      {/* Subpage Breadcrumb Bar */}
+      <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -271,22 +271,41 @@ export default function WisdomChatPage() {
           borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link href="/" style={{ fontSize: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Link
+            href="/"
+            style={{
+              color: 'var(--text-dust)',
+              fontSize: '0.9rem',
+              textDecoration: 'none',
+              transition: 'color 0.2s',
+            }}
+          >
             ← Sanctum
           </Link>
-          <div style={{ borderLeft: '1px solid rgba(212, 175, 55, 0.2)', paddingLeft: '1rem' }}>
-            <h1
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '1.5rem',
-                margin: 0,
-              }}
-              className="gold-gradient-text"
-            >
-              Vedic Wisdom Dialogue (Phase 3 SSE Stream)
-            </h1>
-          </div>
+          <span style={{ color: 'rgba(212, 175, 55, 0.3)' }}>/</span>
+          <h1
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '1.25rem',
+              margin: 0,
+              display: 'inline-block',
+            }}
+            className="gold-gradient-text"
+          >
+            Vedic Wisdom Dialogue
+          </h1>
+          <span
+            className="badge"
+            style={{
+              borderColor: 'rgba(123, 104, 238, 0.4)',
+              color: '#c4b5fd',
+              fontSize: '0.7rem',
+              marginLeft: '0.25rem',
+            }}
+          >
+            Live SSE Stream
+          </span>
         </div>
 
         {user ? (
@@ -300,13 +319,13 @@ export default function WisdomChatPage() {
             <Link
               href="/login"
               className="btn-outline-sacred"
-              style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}
+              style={{ padding: '0.35rem 0.85rem', fontSize: '0.8rem' }}
             >
-              Sign In to Save Dialogues
+              Sign In to Save History
             </Link>
           </div>
         )}
-      </header>
+      </div>
 
       {/* Main Chat Workspace */}
       <div

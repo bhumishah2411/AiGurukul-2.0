@@ -1,7 +1,11 @@
 import { loadWorkerConfig } from '@ai-gurukul/config';
 import { createLogger } from '@ai-gurukul/logging';
 import { DatabaseService } from '@ai-gurukul/database';
+import { StorageProviderFactory } from '@ai-gurukul/storage';
+import { EmbeddingProviderFactory } from '@ai-gurukul/embeddings';
+import { VectorStoreFactory } from '@ai-gurukul/vector-store';
 import Redis from 'ioredis';
+import { DocumentIngestionWorker } from './services/document-ingestion.worker.js';
 
 async function bootstrapWorker(): Promise<void> {
   const config = loadWorkerConfig();
@@ -27,11 +31,29 @@ async function bootstrapWorker(): Promise<void> {
     lazyConnect: true,
   });
 
+  let ingestionWorker: DocumentIngestionWorker | null = null;
+
   try {
     await redisClient.connect();
     logger.info('Worker successfully connected to Redis broker');
+
+    // Initialize Providers
+    const storageProvider = StorageProviderFactory.create(config.STORAGE_PROVIDER);
+    const embeddingProvider = EmbeddingProviderFactory.create(config.EMBEDDING_PROVIDER);
+    const vectorStore = VectorStoreFactory.create(config.VECTOR_STORE_PROVIDER);
+
+    // Initialize Workers
+    ingestionWorker = new DocumentIngestionWorker(
+      redisClient,
+      logger,
+      storageProvider,
+      embeddingProvider,
+      vectorStore
+    );
+
+    logger.info('DocumentIngestionWorker registered and listening on queue');
   } catch (error) {
-    logger.warn({ error }, 'Redis connection warning in worker daemon');
+    logger.warn({ error }, 'Redis connection warning in worker daemon (workers inactive)');
   }
 
   logger.info('🚀 BullMQ Worker Daemon active and listening for background tasks');
@@ -51,6 +73,9 @@ async function bootstrapWorker(): Promise<void> {
     forceTimer.unref();
 
     try {
+      if (ingestionWorker) {
+        await ingestionWorker.close();
+      }
       await redisClient.quit().catch(() => {});
       await dbService.disconnect().catch(() => {});
       logger.info('Worker daemon closed all connections cleanly.');

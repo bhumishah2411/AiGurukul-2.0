@@ -11,9 +11,17 @@ import {
   CreateConversationSchema,
   SendMessageSchema,
   ConversationQuerySchema,
+  SubmitPrakritiAnswersSchema,
+  LogSymptomsSchema,
+  NodeSlugParamSchema,
+  GraphPathQuerySchema,
+  GraphSearchQuerySchema,
+  DocumentUploadSchema,
+  DocumentListQuerySchema,
+  RAGQuerySchema,
 } from './index.js';
 
-describe('Validation Package Unit Tests (Phase 2 & Phase 3)', () => {
+describe('Validation Package Unit Tests (Phase 2 - Phase 5A)', () => {
   it('validates correct registration payload', () => {
     const valid = {
       email: 'Arjuna@Kurukshetra.org',
@@ -137,5 +145,107 @@ describe('Validation Package Unit Tests (Phase 2 & Phase 3)', () => {
       expect(result.data.limit).toBe(15);
       expect(result.data.persona).toBe('vaidya');
     }
+  });
+
+  it('validates SubmitPrakritiAnswersSchema requires minimum 12 answers', () => {
+    const validAnswers = Array.from({ length: 15 }, (_, i) => ({
+      questionId: `q_${i + 1}`,
+      selectedOptionId: `opt_v_${i + 1}`,
+    }));
+
+    const result = SubmitPrakritiAnswersSchema.safeParse({ answers: validAnswers });
+    expect(result.success).toBe(true);
+
+    const tooFew = Array.from({ length: 5 }, (_, i) => ({
+      questionId: `q_${i + 1}`,
+      selectedOptionId: `opt_v_${i + 1}`,
+    }));
+    const invalidResult = SubmitPrakritiAnswersSchema.safeParse({ answers: tooFew });
+    expect(invalidResult.success).toBe(false);
+  });
+
+  it('validates LogSymptomsSchema requires non-empty symptom array', () => {
+    const valid = {
+      symptoms: ['insomnia', 'dry_skin', 'restlessness'],
+      notes: 'Experiencing elevated stress during autumn',
+    };
+    const result = LogSymptomsSchema.safeParse(valid);
+    expect(result.success).toBe(true);
+
+    const empty = { symptoms: [] };
+    expect(LogSymptomsSchema.safeParse(empty).success).toBe(false);
+  });
+
+  it('validates NodeSlugParamSchema format and rejects invalid characters', () => {
+    expect(NodeSlugParamSchema.safeParse({ slug: 'advaita-vedanta' }).success).toBe(true);
+    expect(NodeSlugParamSchema.safeParse({ slug: 'dharma' }).success).toBe(true);
+    expect(NodeSlugParamSchema.safeParse({ slug: 'Invalid Slug!' }).success).toBe(false);
+    expect(NodeSlugParamSchema.safeParse({ slug: '' }).success).toBe(false);
+  });
+
+  it('validates GraphPathQuerySchema parameters and limits', () => {
+    const valid = { source: 'samkhya', target: 'ayurveda', maxDepth: '4' };
+    const result = GraphPathQuerySchema.safeParse(valid);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.maxDepth).toBe(4);
+    }
+
+    const invalid = { source: '', target: 'ayurveda' };
+    expect(GraphPathQuerySchema.safeParse(invalid).success).toBe(false);
+  });
+
+  it('validates GraphSearchQuerySchema filters and limits', () => {
+    const valid = { q: 'Karma', type: 'concept', limit: '30' };
+    const result = GraphSearchQuerySchema.safeParse(valid);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.limit).toBe(30);
+      expect(result.data.type).toBe('concept');
+    }
+  });
+
+  it('validates DocumentUploadSchema requirements', () => {
+    const valid = {
+      title: 'Bhagavad Gita Chapter 2 Analysis',
+      domain: 'gita',
+      content: 'Karmanye vadadhikaraste ma phaleshu kadachana...',
+      author: 'Vyasa',
+      language: 'sa',
+    };
+    const result = DocumentUploadSchema.safeParse(valid);
+    expect(result.success).toBe(true);
+
+    const invalid = { title: 'A', domain: '', content: 'short' };
+    expect(DocumentUploadSchema.safeParse(invalid).success).toBe(false);
+  });
+
+  it('validates DocumentListQuerySchema defaults and coercion', () => {
+    const valid = { page: '3', limit: '50', domain: 'ayurveda', status: 'indexed' };
+    const result = DocumentListQuerySchema.safeParse(valid);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.page).toBe(3);
+      expect(result.data.limit).toBe(50);
+      expect(result.data.domain).toBe('ayurveda');
+      expect(result.data.status).toBe('indexed');
+    }
+  });
+
+  it('validates RAGQuerySchema constraints', () => {
+    const valid = {
+      query: 'What is the true nature of Nishkama Karma?',
+      topK: '5',
+      minScore: '0.2',
+    };
+    const result = RAGQuerySchema.safeParse(valid);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.topK).toBe(5);
+      expect(result.data.minScore).toBe(0.2);
+    }
+
+    const tooShort = { query: 'no' };
+    expect(RAGQuerySchema.safeParse(tooShort).success).toBe(false);
   });
 });

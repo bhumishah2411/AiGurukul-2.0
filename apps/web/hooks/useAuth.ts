@@ -72,6 +72,7 @@ export function useAuth() {
 
   return {
     user,
+    isAuthenticated: Boolean(user),
     loading,
     error,
     login,

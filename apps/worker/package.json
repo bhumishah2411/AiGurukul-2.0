@@ -15,8 +15,11 @@
   "dependencies": {
     "@ai-gurukul/config": "*",
     "@ai-gurukul/database": "*",
+    "@ai-gurukul/embeddings": "*",
     "@ai-gurukul/logging": "*",
+    "@ai-gurukul/storage": "*",
     "@ai-gurukul/types": "*",
+    "@ai-gurukul/vector-store": "*",
     "bullmq": "^5.7.9",
     "ioredis": "^5.4.1"
   },
