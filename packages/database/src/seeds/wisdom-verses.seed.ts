@@ -105,8 +105,10 @@ export const CANONICAL_SEED_VERSES: SeedVerse[] = [
   },
 ];
 
+import { WisdomVerseModel } from '../models/wisdom-verse.model.js';
+
 export async function seedCanonicalWisdom(
-  verseModel: import('mongoose').Model<any>
+  verseModel: import('mongoose').Model<any> = WisdomVerseModel
 ): Promise<number> {
   let seededCount = 0;
   for (const v of CANONICAL_SEED_VERSES) {

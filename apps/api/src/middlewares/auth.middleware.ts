@@ -61,3 +61,32 @@ export function requireRole(allowedRoles: UserRole[]) {
     return next();
   };
 }
+
+/**
+ * Middleware that extracts user credentials if provided, but does not block unauthenticated requests.
+ */
+export function optionalAuth(jwtSecret: string) {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    let token: string | undefined;
+
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7).trim();
+    }
+
+    if (!token && req.cookies && req.cookies.access_token) {
+      token = req.cookies.access_token;
+    }
+
+    if (token) {
+      try {
+        const payload = verifyAccessToken(token, jwtSecret);
+        req.user = payload;
+      } catch {
+        // Token invalid, ignore for optional auth
+      }
+    }
+
+    return next();
+  };
+}

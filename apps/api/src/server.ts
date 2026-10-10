@@ -1,6 +1,12 @@
 import { loadApiConfig } from '@ai-gurukul/config';
 import { createLogger } from '@ai-gurukul/logging';
-import { DatabaseService } from '@ai-gurukul/database';
+import {
+  DatabaseService,
+  seedCanonicalWisdom,
+  seedCanonicalKnowledgeGraph,
+  seedCanonicalDocuments,
+  seedCanonicalQuizzes,
+} from '@ai-gurukul/database';
 import Redis from 'ioredis';
 import { createApp } from './app.js';
 import { Server } from 'node:http';
@@ -19,6 +25,11 @@ async function bootstrap(): Promise<void> {
 
   try {
     await dbService.connect();
+    // Run idempotent seeds for canonical wisdom, knowledge graph, documents, and quizzes
+    await seedCanonicalWisdom().catch(() => {});
+    await seedCanonicalKnowledgeGraph().catch(() => {});
+    await seedCanonicalDocuments().catch(() => {});
+    await seedCanonicalQuizzes().catch(() => {});
   } catch (error) {
     logger.warn({ error }, 'MongoDB initial connection failed; continuing in degraded mode');
   }

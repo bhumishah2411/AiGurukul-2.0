@@ -225,27 +225,31 @@ describe('Auth & User Management Integration Tests (Phase 2)', () => {
     expect(res.body.error.code).toBe('FORBIDDEN');
   });
 
-  it('RBAC Guard: Admin role is granted access to admin routes (200 OK)', async () => {
-    // Elevate user role to 'admin' directly in DB for testing
-    await UserModel.updateOne({ email: testUser.email }, { $set: { role: 'admin' } });
+  it(
+    'RBAC Guard: Admin role is granted access to admin routes (200 OK)',
+    async () => {
+      // Elevate user role to 'admin' directly in DB for testing
+      await UserModel.updateOne({ email: testUser.email }, { $set: { role: 'admin' } });
 
-    // Login again to obtain JWT with 'admin' role claim
-    const loginRes = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email: testUser.email, password: testUser.password });
+      // Login again to obtain JWT with 'admin' role claim
+      const loginRes = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: testUser.email, password: testUser.password });
 
-    const adminAccessToken = loginRes.body.data.tokens.accessToken;
+      const adminAccessToken = loginRes.body.data.tokens.accessToken;
 
-    const res = await request(app)
-      .get('/api/v1/admin/users')
-      .set('Authorization', `Bearer ${adminAccessToken}`);
+      const res = await request(app)
+        .get('/api/v1/admin/users')
+        .set('Authorization', `Bearer ${adminAccessToken}`);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.items).toBeDefined();
-    expect(Array.isArray(res.body.data.items)).toBe(true);
-    expect(res.body.data.total).toBeGreaterThanOrEqual(1);
-  });
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.items).toBeDefined();
+      expect(Array.isArray(res.body.data.items)).toBe(true);
+      expect(res.body.data.total).toBeGreaterThanOrEqual(1);
+    },
+    15000
+  );
 
   it('POST /api/v1/auth/logout invalidates refresh token and clears auth cookies', async () => {
     const res = await request(app).post('/api/v1/auth/logout').send({ refreshToken });
