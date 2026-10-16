@@ -69,7 +69,14 @@ export class TranslationService {
           { key: 'ज', shifted: 'ज्ञ', label: 'ज', shiftedLabel: 'ज्ञ', category: 'consonant' },
           { key: 'झ', shifted: 'झ्', label: 'झ', shiftedLabel: 'झ्', category: 'consonant' },
           { key: 'ञ', shifted: 'ञ्', label: 'ञ', shiftedLabel: 'ञ्', category: 'consonant' },
-          { key: '्', shifted: '्', label: '् (halant)', shiftedLabel: '्', category: 'matra', combining: true },
+          {
+            key: '्',
+            shifted: '्',
+            label: '् (halant)',
+            shiftedLabel: '्',
+            category: 'matra',
+            combining: true,
+          },
         ],
         [
           { key: 'ट', shifted: 'ट्', label: 'ट', shiftedLabel: 'ट्', category: 'consonant' },
@@ -147,7 +154,14 @@ export class TranslationService {
           { key: 'જ', shifted: 'જ્ઞ', label: 'જ', shiftedLabel: 'જ્ઞ', category: 'consonant' },
           { key: 'ઝ', shifted: 'ઝ્', label: 'ઝ', shiftedLabel: 'ઝ્', category: 'consonant' },
           { key: 'ઞ', shifted: 'ઞ્', label: 'ઞ', shiftedLabel: 'ઞ્', category: 'consonant' },
-          { key: '્', shifted: '્', label: '્ (halant)', shiftedLabel: '્', category: 'matra', combining: true },
+          {
+            key: '્',
+            shifted: '્',
+            label: '્ (halant)',
+            shiftedLabel: '્',
+            category: 'matra',
+            combining: true,
+          },
         ],
         [
           { key: 'ટ', shifted: 'ટ્', label: 'ટ', shiftedLabel: 'ટ્', category: 'consonant' },
@@ -185,9 +199,8 @@ export class TranslationService {
   combineWithMatra(currentText: string, keyChar: string): string {
     if (!currentText) return keyChar;
 
-    const isMatraOrSign = /^[\u093E-\u094F\u0951-\u0954\u0902\u0903\u0A82\u0A83\u0ABE-\u0ACF]$/.test(
-      keyChar
-    );
+    const isMatraOrSign =
+      /^[\u093E-\u094F\u0951-\u0954\u0902\u0903\u0A82\u0A83\u0ABE-\u0ACF]$/.test(keyChar);
 
     if (isMatraOrSign) {
       const lastChar = currentText.slice(-1);
@@ -204,7 +217,13 @@ export class TranslationService {
     const { sourceLanguage, targetLanguage, text } = request;
     const cleanText = text.trim();
 
-    const normalize = (s: string) => s.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').replace(/[।॥.,;]/g, '').trim().toLowerCase();
+    const normalize = (s: string) =>
+      s
+        .replace(/[\r\n]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .replace(/[।॥.,;]/g, '')
+        .trim()
+        .toLowerCase();
     const cleanNorm = normalize(cleanText);
 
     // 1. Check if the text matches a known manuscript or verse directly

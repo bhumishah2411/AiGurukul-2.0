@@ -1,0 +1,52 @@
+name: AI Gurukul 2.0 - Docker Build Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**/Dockerfile'
+      - 'docker/**'
+      - '.dockerignore'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/**/Dockerfile'
+      - 'docker/**'
+      - '.dockerignore'
+
+jobs:
+  validate-docker:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Build API Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: false
+          tags: aigurukul/api:latest
+
+      - name: 🔨 Build Worker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/worker/Dockerfile
+          push: false
+          tags: aigurukul/worker:latest
+
+      - name: 🔨 Build Web Client Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: false
+          tags: aigurukul/web:latest

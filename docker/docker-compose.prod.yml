@@ -1,0 +1,152 @@
+# =========================================================================
+# AI Gurukul 2.0 - Production Docker Compose Orchestration
+# =========================================================================
+
+version: '3.8'
+
+services:
+  # -----------------------------------------------------------------------
+  # 1. MongoDB Database Service
+  # -----------------------------------------------------------------------
+  mongodb:
+    image: mongo:7.0
+    container_name: aigurukul_mongodb_prod
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: aigurukul_prod
+    volumes:
+      - mongodb_prod_data:/data/db
+    networks:
+      - aigurukul_net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # -----------------------------------------------------------------------
+  # 2. Redis Cache & Job Queue Service
+  # -----------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: aigurukul_redis_prod
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "sacred_redis_pass_prod"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_prod_data:/data
+    networks:
+      - aigurukul_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "sacred_redis_pass_prod", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # -----------------------------------------------------------------------
+  # 3. Core API Service (Express.js)
+  # -----------------------------------------------------------------------
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: aigurukul_api_prod
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      CORS_ORIGIN: http://localhost:3000
+      MONGODB_URI: mongodb://mongodb:27017/aigurukul_prod
+      REDIS_URL: redis://:sacred_redis_pass_prod@redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-sacred_jwt_access_secret_production_32_bytes_min}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-sacred_jwt_refresh_secret_production_32_bytes_min}
+      COOKIE_SECRET: ${COOKIE_SECRET:-sacred_cookie_secret_production_32_bytes_min}
+      AI_PROVIDER: local
+      EMBEDDING_PROVIDER: local
+      VECTOR_STORE_PROVIDER: local
+      STORAGE_PROVIDER: local
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aigurukul_net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # -----------------------------------------------------------------------
+  # 4. Background Ingestion & AI Worker (BullMQ)
+  # -----------------------------------------------------------------------
+  worker:
+    build:
+      context: ..
+      dockerfile: apps/worker/Dockerfile
+    container_name: aigurukul_worker_prod
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/aigurukul_prod
+      REDIS_URL: redis://:sacred_redis_pass_prod@redis:6379
+      AI_PROVIDER: local
+      EMBEDDING_PROVIDER: local
+      VECTOR_STORE_PROVIDER: local
+      STORAGE_PROVIDER: local
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aigurukul_net
+
+  # -----------------------------------------------------------------------
+  # 5. Web Client Application (Next.js)
+  # -----------------------------------------------------------------------
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    container_name: aigurukul_web_prod
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: http://localhost:5000/api/v1
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - aigurukul_net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+# -------------------------------------------------------------------------
+# Storage Volumes & Networks
+# -------------------------------------------------------------------------
+volumes:
+  mongodb_prod_data:
+    driver: local
+  redis_prod_data:
+    driver: local
+
+networks:
+  aigurukul_net:
+    driver: bridge

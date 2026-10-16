@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, RequestHandler } from 'express';
 import { HealthController } from '../controllers/health.controller.js';
 import { AuthController } from '../controllers/auth.controller.js';
 import { AdminController } from '../controllers/admin.controller.js';
@@ -35,6 +35,7 @@ export interface AppRoutersOptions {
   gamificationController?: GamificationController;
   languageController?: LanguageController;
   jwtSecret?: string;
+  authLimiter?: RequestHandler;
 }
 
 export function createApiRouter(options: AppRoutersOptions): Router {
@@ -67,7 +68,10 @@ export function createApiRouter(options: AppRoutersOptions): Router {
 
   // Mount Auth routes if controller provided
   if (authController) {
-    v1.use('/auth', createAuthRouter({ authController, jwtSecret }));
+    v1.use(
+      '/auth',
+      createAuthRouter({ authController, jwtSecret, authLimiter: options.authLimiter })
+    );
   }
 
   // Mount Wisdom routes if controller provided
@@ -102,7 +106,10 @@ export function createApiRouter(options: AppRoutersOptions): Router {
 
   // Mount Gamification routes if controller provided
   if (gamificationController) {
-    v1.use('/gamification', createGamificationRouter({ controller: gamificationController, jwtSecret }));
+    v1.use(
+      '/gamification',
+      createGamificationRouter({ controller: gamificationController, jwtSecret })
+    );
   }
 
   // Mount Language and Translation routes if controller provided

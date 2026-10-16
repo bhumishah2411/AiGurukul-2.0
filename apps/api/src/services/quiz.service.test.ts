@@ -97,14 +97,12 @@ describe('QuizService Unit Tests (Phase 5B)', () => {
       })),
       findByUser: vi.fn().mockResolvedValue([]),
       findById: vi.fn().mockResolvedValue(null),
-      getUserStats: vi
-        .fn()
-        .mockResolvedValue({
-          totalAttempts: 1,
-          passedAttempts: 1,
-          averageScore: 100,
-          highestScore: 100,
-        }),
+      getUserStats: vi.fn().mockResolvedValue({
+        totalAttempts: 1,
+        passedAttempts: 1,
+        averageScore: 100,
+        highestScore: 100,
+      }),
     };
 
     mockAiProvider = {

@@ -1,8 +1,5 @@
 import { GamificationRepository } from '../repositories/gamification.repository.js';
-import {
-  CANONICAL_BAZAAR_ITEMS,
-  CANONICAL_JIGSAW_PUZZLES,
-} from '@ai-gurukul/database';
+import { CANONICAL_BAZAAR_ITEMS, CANONICAL_JIGSAW_PUZZLES } from '@ai-gurukul/database';
 import {
   UserGamificationDTO,
   BazaarItemDTO,
@@ -40,8 +37,16 @@ export class GamificationService {
   async completeQuest(
     userId: string,
     questId: string
-  ): Promise<{ profile: UserGamificationDTO; rewardXp: number; rewardCoins: number; rewardBadge?: string }> {
-    const { profile, rewardXp, rewardCoins, rewardBadge } = await this.repo.completeQuest(userId, questId);
+  ): Promise<{
+    profile: UserGamificationDTO;
+    rewardXp: number;
+    rewardCoins: number;
+    rewardBadge?: string;
+  }> {
+    const { profile, rewardXp, rewardCoins, rewardBadge } = await this.repo.completeQuest(
+      userId,
+      questId
+    );
     return {
       profile: profile.toDTO(),
       rewardXp,

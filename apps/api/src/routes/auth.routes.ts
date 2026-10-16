@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, RequestHandler } from 'express';
 import { AuthController } from '../controllers/auth.controller.js';
 import { requireAuth } from '../middlewares/auth.middleware.js';
 import { validateBody } from '../middlewares/validate.middleware.js';
@@ -14,17 +14,21 @@ import {
 export interface AuthRoutesOptions {
   authController: AuthController;
   jwtSecret: string;
+  authLimiter?: RequestHandler;
 }
 
 export function createAuthRouter(options: AuthRoutesOptions): Router {
   const router = Router();
-  const { authController, jwtSecret } = options;
+  const { authController, jwtSecret, authLimiter } = options;
 
-  // Public authentication endpoints
-  router.post('/register', validateBody(RegisterRequestSchema), authController.register);
-  router.post('/login', validateBody(LoginRequestSchema), authController.login);
-  router.post('/google', validateBody(GoogleAuthRequestSchema), authController.googleLogin);
-  router.post('/refresh', validateBody(RefreshTokenRequestSchema), authController.refresh);
+  // Optional rate limiting middleware for sensitive auth operations
+  const limit = authLimiter || ((_req, _res, next) => next());
+
+  // Public authentication endpoints with brute-force protection
+  router.post('/register', limit, validateBody(RegisterRequestSchema), authController.register);
+  router.post('/login', limit, validateBody(LoginRequestSchema), authController.login);
+  router.post('/google', limit, validateBody(GoogleAuthRequestSchema), authController.googleLogin);
+  router.post('/refresh', limit, validateBody(RefreshTokenRequestSchema), authController.refresh);
   router.post('/logout', authController.logout);
 
   // Authenticated user endpoints

@@ -27,11 +27,7 @@ export class LanguageController {
     }
   };
 
-  getKeyboardLayout = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  getKeyboardLayout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const lang = (req.params.language || req.query.language || 'sa') as SupportedLanguage;
       const layout = this.translationService.getVirtualKeyboardLayout(lang);
@@ -61,11 +57,7 @@ export class LanguageController {
     }
   };
 
-  getManuscriptBySlug = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  getManuscriptBySlug = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const slug = req.params.slug;
       const manuscript = await this.translationService.getManuscriptBySlug(slug);
@@ -92,11 +84,7 @@ export class LanguageController {
     }
   };
 
-  getEtymologyByRoot = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  getEtymologyByRoot = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const root = req.params.root;
       const parsed = EtymologyQuerySchema.parse({ root });

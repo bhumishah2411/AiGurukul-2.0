@@ -1,0 +1,15 @@
+node_modules
+.next
+.turbo
+.storage
+dist
+coverage
+*.log
+.env
+.env.local
+.git
+.github
+.mddd
+architecture_plan.md
+PHASE_6_7_COMPLETION.md
+README.md

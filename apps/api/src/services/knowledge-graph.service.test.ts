@@ -158,15 +158,11 @@ describe('KnowledgeGraphService Unit Tests', () => {
   });
 
   it('findShortestPath throws BadRequestError when source equals target', async () => {
-    await expect(service.findShortestPath('samkhya', 'samkhya')).rejects.toThrow(
-      BadRequestError
-    );
+    await expect(service.findShortestPath('samkhya', 'samkhya')).rejects.toThrow(BadRequestError);
   });
 
   it('findShortestPath throws NotFoundError when node does not exist', async () => {
-    await expect(service.findShortestPath('samkhya', 'unknown')).rejects.toThrow(
-      NotFoundError
-    );
+    await expect(service.findShortestPath('samkhya', 'unknown')).rejects.toThrow(NotFoundError);
   });
 
   it('findShortestPath correctly computes multi-hop shortest path via BFS', async () => {

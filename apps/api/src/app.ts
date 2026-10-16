@@ -7,6 +7,8 @@ import { ApiConfig } from '@ai-gurukul/config';
 import { NotFoundError } from '@ai-gurukul/types';
 import { requestIdMiddleware } from './middlewares/request-id.middleware.js';
 import { createErrorMiddleware } from './middlewares/error.middleware.js';
+import { createRateLimiter } from './middlewares/rate-limit.middleware.js';
+import { sanitizeMiddleware } from './middlewares/sanitize.middleware.js';
 import { createApiRouter } from './routes/index.js';
 import { HealthController } from './controllers/health.controller.js';
 import { HealthService } from './services/health.service.js';
@@ -88,10 +90,40 @@ export function createApp(options: CreateAppOptions): Express {
   const { config, logger, dbService, redisClient } = options;
   const app = express();
 
-  // 1. Basic security headers
-  app.use(helmet());
+  // 1. Hardened production security headers (Helmet)
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: [
+            "'self'",
+            config.CORS_ORIGIN,
+            'http://localhost:5000',
+            'http://localhost:3000',
+          ],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true,
+      },
+      frameguard: {
+        action: 'deny',
+      },
+    })
+  );
 
-  // 2. Strict CORS
+  // 2. Strict CORS Whitelist
   app.use(
     cors({
       origin: config.CORS_ORIGIN,
@@ -106,7 +138,29 @@ export function createApp(options: CreateAppOptions): Express {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(cookieParser(config.COOKIE_SECRET));
 
-  // 4. Observability: Request ID & Structured HTTP logging
+  // 4. NoSQL injection & path traversal sanitization
+  app.use(sanitizeMiddleware);
+
+  // 5. Distributed sliding-window rate limiters
+  const globalLimiter = createRateLimiter({
+    windowMs: 60 * 1000,
+    maxRequests: config.NODE_ENV === 'test' ? 1000 : 120,
+    keyPrefix: 'rl:global',
+    redisClient,
+    logger,
+  });
+  app.use(globalLimiter);
+
+  const authLimiter = createRateLimiter({
+    windowMs: 60 * 1000,
+    maxRequests: config.NODE_ENV === 'test' ? 1000 : 15,
+    keyPrefix: 'rl:auth',
+    redisClient,
+    logger,
+    message: 'Too many authentication attempts. Please try again after 1 minute.',
+  });
+
+  // 6. Observability: Request ID & Structured HTTP logging
   app.use(requestIdMiddleware);
   app.use(createHttpLogger(logger));
 
@@ -135,11 +189,9 @@ export function createApp(options: CreateAppOptions): Express {
     options.wisdomService ||
     new WisdomService(conversationRepo, messageRepo, verseRepo, userRepo, aiProvider, logger);
 
-  const ayurvedaService =
-    options.ayurvedaService || new AyurvedaService(ayurvedaRepo);
+  const ayurvedaService = options.ayurvedaService || new AyurvedaService(ayurvedaRepo);
 
-  const graphService =
-    options.graphService || new KnowledgeGraphService(graphRepo);
+  const graphService = options.graphService || new KnowledgeGraphService(graphRepo);
 
   const storageProvider = StorageProviderFactory.create(config.STORAGE_PROVIDER);
   const embeddingProvider = EmbeddingProviderFactory.create(config.EMBEDDING_PROVIDER);
@@ -150,20 +202,16 @@ export function createApp(options: CreateAppOptions): Express {
     new DocumentService(docRepo, chunkRepo, storageProvider, embeddingProvider, vectorStore);
 
   const ragService =
-    options.ragService ||
-    new RAGService(docRepo, chunkRepo, embeddingProvider, vectorStore);
+    options.ragService || new RAGService(docRepo, chunkRepo, embeddingProvider, vectorStore);
 
-  const quizService =
-    options.quizService || new QuizService(quizRepo, quizAttemptRepo, aiProvider);
+  const quizService = options.quizService || new QuizService(quizRepo, quizAttemptRepo, aiProvider);
 
   const gamificationService =
     options.gamificationService || new GamificationService(gamificationRepo);
 
-  const translationService =
-    options.translationService || new TranslationService(manuscriptRepo);
+  const translationService = options.translationService || new TranslationService(manuscriptRepo);
 
-  const etymologyService =
-    options.etymologyService || new EtymologyService();
+  const etymologyService = options.etymologyService || new EtymologyService();
 
   const healthService = new HealthService(dbService, redisClient);
   const healthController = new HealthController(healthService);
@@ -192,6 +240,7 @@ export function createApp(options: CreateAppOptions): Express {
     gamificationController,
     languageController,
     jwtSecret: config.JWT_ACCESS_SECRET,
+    authLimiter,
   });
   app.use(apiRouter);
 

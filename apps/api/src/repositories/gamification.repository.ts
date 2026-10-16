@@ -59,7 +59,12 @@ export class GamificationRepository {
     userId: string,
     xpDelta: number,
     coinsDelta: number
-  ): Promise<{ profile: IGamificationProfileDocument; leveledUp: boolean; oldLevel: GurukulLevel; newLevel: GurukulLevel }> {
+  ): Promise<{
+    profile: IGamificationProfileDocument;
+    leveledUp: boolean;
+    oldLevel: GurukulLevel;
+    newLevel: GurukulLevel;
+  }> {
     const profile = await this.getOrCreateProfile(userId);
     const oldLevel = profile.level;
 
@@ -81,7 +86,12 @@ export class GamificationRepository {
   async completeQuest(
     userId: string,
     questId: string
-  ): Promise<{ profile: IGamificationProfileDocument; rewardXp: number; rewardCoins: number; rewardBadge?: string }> {
+  ): Promise<{
+    profile: IGamificationProfileDocument;
+    rewardXp: number;
+    rewardCoins: number;
+    rewardBadge?: string;
+  }> {
     const profile = await this.getOrCreateProfile(userId);
     const quest = profile.activeQuests.find((q) => q.questId === questId || q.code === questId);
 
@@ -117,14 +127,13 @@ export class GamificationRepository {
     return { profile, rewardXp, rewardCoins, rewardBadge };
   }
 
-  async buyBazaarItem(
-    userId: string,
-    item: BazaarItemDTO
-  ): Promise<IGamificationProfileDocument> {
+  async buyBazaarItem(userId: string, item: BazaarItemDTO): Promise<IGamificationProfileDocument> {
     const profile = await this.getOrCreateProfile(userId);
 
     if (profile.coins < item.price) {
-      throw new Error(`Insufficient coins. Item costs ${item.price} coins, but you have ${profile.coins}.`);
+      throw new Error(
+        `Insufficient coins. Item costs ${item.price} coins, but you have ${profile.coins}.`
+      );
     }
 
     profile.coins -= item.price;
@@ -186,7 +195,11 @@ export class GamificationRepository {
       earnedXp: number;
       earnedCoins: number;
     }
-  ): Promise<{ profile: IGamificationProfileDocument; leveledUp: boolean; newLevel: GurukulLevel }> {
+  ): Promise<{
+    profile: IGamificationProfileDocument;
+    leveledUp: boolean;
+    newLevel: GurukulLevel;
+  }> {
     const profile = await this.getOrCreateProfile(userId);
     const oldLevel = profile.level;
 
@@ -213,7 +226,9 @@ export class GamificationRepository {
     }
 
     // Update quest progress for jigsaw puzzle quest if present
-    const jigsawQuest = profile.activeQuests.find((q) => q.code === 'jigsaw_lore_puzzle' && q.status === 'available');
+    const jigsawQuest = profile.activeQuests.find(
+      (q) => q.code === 'jigsaw_lore_puzzle' && q.status === 'available'
+    );
     if (jigsawQuest) {
       jigsawQuest.currentCount = Math.min(jigsawQuest.targetCount, jigsawQuest.currentCount + 1);
       if (jigsawQuest.currentCount >= jigsawQuest.targetCount) {
