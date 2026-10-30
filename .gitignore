@@ -18,11 +18,15 @@ pnpm-debug.log*
 lerna-debug.log*
 *.log
 
-# Environment variables
+# Environment variables & Sensitive Credentials
 .env
-.env*.local
-.env.production
-.env.development
+.env*
+*.env
+*.env.*
+*credentials*
+*.pem
+*.key
+*.cert
 !.env.example
 !.env.*.example
 
@@ -44,6 +48,3 @@ PHASE_2_COMPLETION.md
 phase_2.md
 PHASE_3_COMPLETION.md
 phase_3.md
-
-
-

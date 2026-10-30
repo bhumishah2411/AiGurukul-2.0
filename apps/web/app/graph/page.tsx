@@ -892,6 +892,7 @@ export default function KnowledgeGraphPage() {
 
       {/* Main Graph Visualization & Drawer Container */}
       <div
+        className="graph-workspace-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: activeNode ? '1fr 380px' : '1fr',

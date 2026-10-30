@@ -123,6 +123,7 @@ export function createApiRouter(options: AppRoutersOptions): Router {
   }
 
   router.use('/api/v1', v1);
+  router.use('/', v1);
 
   return router;
 }

@@ -436,3 +436,79 @@ textarea, input[type="text"], input[type="search"], input[type="email"], input[t
 
 
 
+
+/* ========================================================================= */
+/* Comprehensive Mobile Responsiveness Utilities (AI Gurukul 2.0)            */
+/* ========================================================================= */
+
+/* Horizontal scroll container for Saga Map on mobile devices */
+.saga-map-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.4) rgba(13, 11, 8, 0.8);
+}
+
+.saga-map-scroll-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.saga-map-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.4);
+  border-radius: 3px;
+}
+
+/* Screen width < 768px (Mobile & Tablets) */
+@media (max-width: 768px) {
+  /* Sticky game header on mobile */
+  .game-sticky-header {
+    padding: 0.5rem 0.65rem !important;
+  }
+
+  .game-header-title {
+    font-size: 0.85rem !important;
+    max-width: 140px !important;
+  }
+
+  /* Chat and Document Workspaces: Stack sidebar into single column */
+  .wisdom-workspace,
+  .documents-workspace-grid,
+  .graph-workspace-grid,
+  .etymology-workspace-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Responsive cards and padding adjustments */
+  .temple-card {
+    padding: 1.15rem !important;
+  }
+
+  /* Hide verbose profile pill text on narrow screens to prevent navbar crowding */
+  .navbar-user-pill {
+    display: none !important;
+  }
+}
+
+/* Screen width < 480px (Compact Mobile) */
+@media (max-width: 480px) {
+  .game-sticky-header {
+    padding: 0.4rem 0.5rem !important;
+    gap: 0.35rem !important;
+  }
+
+  .game-header-title {
+    display: none !important;
+  }
+
+  h1 {
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+  }
+
+  h2 {
+    font-size: 1.35rem !important;
+  }
+}

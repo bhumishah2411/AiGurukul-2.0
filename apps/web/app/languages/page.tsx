@@ -2216,7 +2216,7 @@ export default function LanguagesPage() {
         {/* TAB 4: ROOT-WORD (DHATU) & ETYMOLOGY */}
         {activeTab === 'etymology' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
+            <div className="etymology-workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
               {/* Left Column: Root List & Search */}
               <div>
                 <div style={{ marginBottom: '1rem' }}>

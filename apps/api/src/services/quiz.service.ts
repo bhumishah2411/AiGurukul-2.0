@@ -1574,9 +1574,7 @@ Format the response strictly as valid JSON array of objects without markdown bac
       questionIndex: idx,
     }));
 
-    const title = input.topic
-      ? `${input.topic.trim()} Quiz (${difficulty.toUpperCase()})`
-      : `Dynamic Quiz: ${domain.toUpperCase()} Wisdom (${difficulty.toUpperCase()})`;
+    const title = `Dynamic Quiz: ${input.topic ? input.topic.trim() : `${domain.toUpperCase()} Wisdom`} (${difficulty.toUpperCase()})`;
     const description = `Interactive custom assessment created from topic "${topic}", testing understanding of ${domain.toUpperCase()} concepts, verses, and practical wisdom.`;
 
     const savedQuiz = await this.quizRepo.createQuiz({

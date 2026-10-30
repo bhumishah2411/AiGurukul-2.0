@@ -238,9 +238,7 @@ export class LocalAIProvider implements AIProvider {
     const isBetrayalOrPolitics = /\b(betray|credit|stole|steal|stealing|plagiariz|lied|lying|cheat|deceive|deceit|manipulat|politic|office|colleague|boss|backstab|unfair|rival|sabotage|alliance|trust|distrust)\b/i.test(
       cleanQuery
     );
-    const isFailureOrRejection = /\b(fail|failed|failure|exam|test|upsc|interview|rejection|rejected|score|rank|jobless|unemployed|unsuccessful|loss|lost money|business loss|broke)\b/i.test(
-      cleanQuery
-    );
+    const isFailureOrRejection = /\b(fail|failed|failure|exam|test|upsc|interview|rejection|rejected|score|rank|jobless|unemployed|unsuccessful|lost money|business loss|broke)\b/i.test(cleanQuery);
     const isFamilyOrExpectations = /\b(family|parent|parents|mother|father|dad|mom|son|daughter|relative|marriage|marry|divorce|forcing|pressure|quit|compelling|obligation)\b/i.test(
       cleanQuery
     );
@@ -552,6 +550,18 @@ export class LocalAIProvider implements AIProvider {
       return res;
     }
 
+    // Prioritize grief and bereavement before exam/financial failure
+    if (ctx.isEmotionalOrGrief) {
+      let res =
+        `Grief runs very deep, and I honor the sorrow you carry. When someone or something precious is lost, the heart feels shattered. ` +
+        `In Chapter 2 of the Bhagavad Gita, I reminded Arjuna: the truly wise mourn neither for the living nor for the departed, because the light of the soul (*Atman*) is imperishable and beyond death <cite canonicalRef="BG 2.11">BG 2.11</cite>. Furthermore, as taught in <cite canonicalRef="BG 2.47">BG 2.47</cite>, dedicate yourself to righteous action in the living present without clinging anxiously to results. ` +
+        `Grief is the sacred witness of love. Do not force yourself to pretend you are unaffected. Let the tears cleanse the grief, but remember also that your own life has purpose yet to unfold. You are never alone in this darkness; I am present with you. What memories or feelings are weighing most heavily right now?`;
+      if (ctx.isScriptureRequest && bestSource && cit) {
+        res += `\n\nAs reflected in ${cit}: "${cleanQuote}".`;
+      }
+      return res;
+    }
+
     // 6. Failure, Exam Pressure, Setbacks
     if (ctx.isFailureOrRejection) {
       let res =
@@ -591,11 +601,21 @@ export class LocalAIProvider implements AIProvider {
       return res;
     }
 
-    // 9. Grief, Deep Sadness & Loss
+    // Career Direction & Crossroads
+    if (ctx.isCareerOrDirection) {
+      return (
+        `When you feel confused about your future, it is natural for the mind to feel unsettled. ` +
+        `Whether navigating career or education choices, remember that you do not need to foresee the distant horizon all at once. ` +
+        `What matters is taking the next honest step with sincerity and dedication. ` +
+        `Focus entirely on the duty in front of you right now, releasing the anxious clinging to imagined outcomes. What path or question is weighing on your mind today?`
+      );
+    }
+
+    // Grief, Deep Sadness & Loss (BG 2.11 & BG 2.47)
     if (ctx.isEmotionalOrGrief) {
       let res =
         `Grief runs very deep, and I honor the sorrow you carry. When someone or something precious is lost, the heart feels shattered. ` +
-        `In Chapter 2, I reminded Arjuna: the physical vessel changes and dissolves, like worn-out garments cast aside by a traveler (*Vasamsi jirnani yatha vihaya*); but the light of the soul (*Atman*) is never born, never dies, cannot be pierced by weapons, nor burned by fire. (BG 2.20-22). ` +
+        `In Chapter 2 of the Bhagavad Gita, I reminded Arjuna: the truly wise mourn neither for the living nor for the departed, because the light of the soul (*Atman*) is imperishable and beyond death <cite canonicalRef="BG 2.11">BG 2.11</cite>. Furthermore, as taught in <cite canonicalRef="BG 2.47">BG 2.47</cite>, dedicate yourself to righteous action in the living present without clinging anxiously to results. ` +
         `Grief is the sacred witness of love. Do not force yourself to pretend you are unaffected. Let the tears cleanse the grief, but remember also that your own life has purpose yet to unfold. You are never alone in this darkness; I am present with you. What memories or feelings are weighing most heavily right now?`;
       if (ctx.isScriptureRequest && bestSource && cit) {
         res += `\n\nAs reflected in ${cit}: "${cleanQuote}".`;
@@ -757,17 +777,13 @@ export class LocalAIProvider implements AIProvider {
 
     // 7. Career Direction & Crossroads
     if (ctx.isCareerOrDirection) {
-      let res =
-        `Every career decision is an exercise in resource allocation. In the Arthashastra, I taught that a kingdom is sustained by its *Saptanga* (Seven Elements of Sovereign Power). In personal career strategy, this translates to your capital (*Kosha*), your core skills (*Bala*), your reputation (*Durga*), and your dependable network (*Mitra*). ` +
-        `When deciding between options, do not choose based on emotional excitement or superficial vanity. Evaluate three concrete variables: ` +
-        `1. *Downside Risk (Kshaya):* If this choice fails, can your finances and career survive the impact? ` +
-        `2. *Upside Leverage (Vriddhi):* Does this path give you greater autonomy, skill compounding, and authority over the next three to five years? ` +
-        `3. *Stability (Sthana):* Are you jumping out of frustration, or advancing from a position of strength? ` +
-        `Never leave a secure position until the bridge to the next stronghold is firmly secured. What are the specific options you are weighing?`;
-      if (ctx.isScriptureRequest && bestSource && cit) {
-        res += `\n\nAs advised in ${cit}: "${cleanQuote}".`;
-      }
-      return res;
+      return (
+        `Uncertainty about your path is not a weakness; it is simply unorganized intelligence. ` +
+        `When you feel confused about your future, clarify your priorities and evaluate your concrete options. ` +
+        `Identify where your true leverage lies. Never leap blindly from frustration. ` +
+        `Weigh the risks and rewards of each path with dispassionate analysis. ` +
+        `Once you determine the strongest route, commit to decisive action, for action dissolves doubt where passive waiting breeds paralysis. What specific options are before you?`
+      );
     }
 
     // 8. Health & Physical Symptoms Guidance
@@ -878,8 +894,18 @@ export class LocalAIProvider implements AIProvider {
       }
     }
 
+    // Career Direction & Crossroads
+    if (ctx.isCareerOrDirection) {
+      return (
+        `When confusion clouds your direction, your mind and body need grounding. ` +
+        `Often, future anxiety arises when we are mentally overburdened and depleted. ` +
+        `Give yourself permission to slow down and rest. Nourish your body with wholesome habits, protect your sleep, and cultivate peace of mind. ` +
+        `As your natural energy returns, mental clarity follows naturally. What small change can you make today to restore your balance?`
+      );
+    }
+
     // 4. Exhaustion, Burnout & Low Energy
-    if (ctx.isHealthOrVitality || ctx.isCareerOrDirection) {
+    if (ctx.isHealthOrVitality) {
       let res =
         `What you are experiencing — feeling drained, fatigued, or mentally exhausted — is something we examine very carefully in Ayurveda through the *Traya Upastambha* (The Three Pillars of Life: Ahara/nutrition, Nidra/sleep, and Brahmacharya/vital energy preservation). ` +
         `When a person is under chronic stress, their digestive fire (*Agni*) becomes impaired. Undigested food and stress hormones turn into *Ama* — sticky toxic residue that clogs the micro-channels of circulation (*Srotas*), causing heaviness, lack of enthusiasm, and mental fog. ` +
@@ -1050,6 +1076,24 @@ export class LocalAIProvider implements AIProvider {
       );
     }
 
+    // Career Direction & Crossroads
+    if (ctx.isCareerOrDirection) {
+      return (
+        `Every life arrives at profound crossroads where the forward path seems uncertain. ` +
+        `In the chronicles of the Mahabharata, true heroes did not seek easy certainty; they grounded their choices in timeless values and eternal principles of Dharma. ` +
+        `When confusion clouds your outlook, ask not which path promises comfort, but which path honors your deepest integrity and character. What moral or practical choice are you contemplating?`
+      );
+    }
+
+    // Moral Dilemma / Truth vs Loyalty
+    if (ctx.isMoralDilemma || /loyalty|truth|honesty|conflict/i.test(userMsg)) {
+      return (
+        `Throughout the chronicles of the Mahabharata, the deepest lesson is that human destiny is shaped by subtle choices made in moments of ambiguity. ` +
+        `When loyalty to a friend conflicts with truth and honesty, remember Karna's tragic consequence: even noble personal devotion cannot justify compromising righteousness and Dharma. ` +
+        `True character and integrity require standing firmly with universal justice, even when personal loyalties pull in opposite directions. What aspect of this situation feels most significant to you?`
+      );
+    }
+
     const topic = ctx.keywords.length > 0 ? ctx.keywords.join(' ') : userMsg;
     return (
       `Regarding "${topic}": ` +
@@ -1173,8 +1217,18 @@ export class LocalAIProvider implements AIProvider {
       return res;
     }
 
+    // Career Direction & Crossroads
+    if (ctx.isCareerOrDirection) {
+      return (
+        `When the mind is caught in future uncertainty, pause and take several slow, steady breaths. ` +
+        `Confusion about tomorrow arises when awareness scatters across what has not yet arrived. ` +
+        `Anchor yourself in the living present. Break down your path into what you can accomplish in this very hour. ` +
+        `As you commit your undivided attention to one conscious step, steady momentum builds and the fog clears naturally. What simple practice or action can you undertake right now?`
+      );
+    }
+
     // 6. Impatience & Fear of Failure
-    if (ctx.isFailureOrRejection || ctx.isCareerOrDirection) {
+    if (ctx.isFailureOrRejection) {
       let res =
         `In the practice of self-mastery, the mind constantly falls prey to two root afflictions (*Kleshas*): *Raga* (anxious craving for pleasant rewards) and *Abhinivesha* (dread of loss or failure). ` +
         `In *Yoga Sutras 1.14*, I taught that authentic progress is established only when practice (*Abhyasa*) is attended to: ` +
@@ -1270,7 +1324,7 @@ export class LocalAIProvider implements AIProvider {
       return this.buildPatanjaliResponse(ctx, lastUserMsg, bestSource, isMultiTurn);
     }
 
-    return `I am here to explore this question with you. Reflect on what is in your hands, and let us take the next step with clarity.`;
+    return `Regarding "${lastUserMsg}": This is a foundational Vedic principle. Act with equanimity, reflect on what is in your hands, and let us take the next step with clarity.`;
   }
 
   // -------------------------------------------------------------------------

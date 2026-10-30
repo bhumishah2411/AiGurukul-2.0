@@ -12,6 +12,14 @@ import Redis from 'ioredis';
 import { createApp } from './app.js';
 import { Server } from 'node:http';
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('⚠️ [API Process] Unhandled Promise Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('🚨 [API Process] Uncaught Exception:', err);
+});
+
 async function bootstrap(): Promise<void> {
   const config = loadApiConfig();
   const logger = createLogger({ name: 'ai-gurukul-api', level: config.LOG_LEVEL });
@@ -26,30 +34,47 @@ async function bootstrap(): Promise<void> {
 
   try {
     await dbService.connect();
-    // Run idempotent seeds for canonical wisdom, knowledge graph, documents, and quizzes
-    await seedCanonicalWisdom().catch(() => {});
-    await seedCanonicalKnowledgeGraph().catch(() => {});
-    await seedCanonicalDocuments().catch(() => {});
-    await seedCanonicalQuizzes().catch(() => {});
-    await seedCanonicalManuscripts().catch(() => {});
+    // Run idempotent seeds asynchronously in background without blocking server port binding
+    (async () => {
+      try {
+        await seedCanonicalWisdom().catch(() => {});
+        await seedCanonicalKnowledgeGraph().catch(() => {});
+        await seedCanonicalDocuments().catch(() => {});
+        await seedCanonicalQuizzes().catch(() => {});
+        await seedCanonicalManuscripts().catch(() => {});
+        logger.info('Canonical seeds initialized in background');
+      } catch (err) {
+        logger.warn({ err }, 'Background canonical seeds completed with warnings');
+      }
+    })();
   } catch (error) {
     logger.warn({ error }, 'MongoDB initial connection failed; continuing in degraded mode');
   }
 
-  // Initialize Redis client
-  const redisClient = new Redis(config.REDIS_URL, {
-    maxRetriesPerRequest: 3,
-    lazyConnect: true,
-  });
-  redisClient.on('error', () => {
-    // Suppress unhandled error log when running without Redis in local dev mode
-  });
+  // Initialize Redis client only if explicitly configured via environment variable
+  let redisClient: Redis | undefined;
+  const rawRedisUrl = process.env.REDIS_URL;
+  const isRedisConfigured =
+    Boolean(rawRedisUrl) && rawRedisUrl !== 'redis://localhost:6379';
 
-  try {
-    await redisClient.connect();
-    logger.info('Connected to Redis successfully');
-  } catch (error) {
-    logger.warn({ error }, 'Redis initial connection failed; continuing in degraded mode');
+  if (isRedisConfigured && rawRedisUrl) {
+    try {
+      const candidate = new Redis(rawRedisUrl, {
+        maxRetriesPerRequest: 1,
+        connectTimeout: 2500,
+        retryStrategy: () => null,
+        lazyConnect: true,
+      });
+      candidate.on('error', () => {});
+      await candidate.connect();
+      redisClient = candidate;
+      logger.info('Connected to Redis successfully');
+    } catch (error) {
+      logger.warn({ error }, 'Redis connection failed; running in degraded mode with memory store');
+      redisClient = undefined;
+    }
+  } else {
+    logger.info('No external Redis configured; using in-memory store for rate limiting');
   }
 
   // Create Express application
@@ -60,9 +85,11 @@ async function bootstrap(): Promise<void> {
     redisClient,
   });
 
-  const server: Server = app.listen(config.PORT, () => {
-    logger.info(`✨ AI Gurukul API running on port ${config.PORT} [${config.NODE_ENV}]`);
-    logger.info(`👉 Health check: http://localhost:${config.PORT}/health/live`);
+  // Explicitly bind to 0.0.0.0 for containerized / Render port scanning
+  const host = '0.0.0.0';
+  const server: Server = app.listen(config.PORT, host, () => {
+    logger.info(`✨ AI Gurukul API running on port ${config.PORT} [${config.NODE_ENV}] (bound to ${host})`);
+    logger.info(`👉 Health check: http://${host}:${config.PORT}/health/live`);
   });
 
   // Graceful shutdown handling
@@ -88,8 +115,10 @@ async function bootstrap(): Promise<void> {
       logger.info('HTTP server closed successfully');
 
       // 2. Disconnect Redis
-      await redisClient.quit().catch(() => {});
-      logger.info('Redis client disconnected');
+      if (redisClient) {
+        await redisClient.quit().catch(() => {});
+        logger.info('Redis client disconnected');
+      }
 
       // 3. Disconnect MongoDB
       await dbService.disconnect();

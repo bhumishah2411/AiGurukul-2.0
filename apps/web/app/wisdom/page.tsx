@@ -662,6 +662,7 @@ export default function WisdomChatPage() {
 
       {/* Main Chat Workspace */}
       <div
+        className="wisdom-workspace"
         style={{
           display: 'grid',
           gridTemplateColumns: '280px 1fr',

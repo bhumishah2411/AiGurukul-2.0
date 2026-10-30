@@ -29,7 +29,7 @@ export class AIProviderFactory {
     ).toLowerCase();
 
     // Auto-detect API key presence if provider wasn't explicitly forced to local
-    if (!requestedType || requestedType === 'local') {
+    if (!requestedType || (!providerType && requestedType === 'local')) {
       if (options?.apiKey?.startsWith('gsk_') || process.env.GROQ_API_KEY) {
         requestedType = 'groq';
       } else if (options?.apiKey || process.env.GEMINI_API_KEY) {
@@ -48,9 +48,15 @@ export class AIProviderFactory {
           console.warn('⚠️ [AIProviderFactory] GROQ_API_KEY not configured. Falling back to LocalAIProvider.');
           return new LocalAIProvider();
         }
+        let model = options?.model || process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+        if (model === 'gpt-oss-120b') {
+          model = 'openai/gpt-oss-120b';
+        } else if (model === 'gpt-oss-20b') {
+          model = 'openai/gpt-oss-20b';
+        }
         return new OpenAIProvider(
           apiKey,
-          options?.model || process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+          model,
           'https://api.groq.com/openai/v1'
         );
       }

@@ -124,10 +124,40 @@ export function createApp(options: CreateAppOptions): Express {
     })
   );
 
-  // 2. Strict CORS Whitelist
+  // 2. Intelligent, Resilient CORS Whitelist (Supports bare domains and *.vercel.app)
+  const configuredOrigins = (config.CORS_ORIGIN || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
   app.use(
     cors({
-      origin: config.CORS_ORIGIN,
+      origin: (requestOrigin, callback) => {
+        if (!requestOrigin) return callback(null, true);
+        if (config.CORS_ORIGIN === '*') return callback(null, true);
+
+        const cleanReqOrigin = requestOrigin.replace(/\/$/, '');
+
+        const isExplicitlyAllowed = configuredOrigins.some((allowed) => {
+          const cleanAllowed = allowed.replace(/\/$/, '');
+          return (
+            cleanAllowed === cleanReqOrigin ||
+            `https://${cleanAllowed}` === cleanReqOrigin ||
+            `http://${cleanAllowed}` === cleanReqOrigin
+          );
+        });
+
+        const isVercelOrLocal =
+          cleanReqOrigin.endsWith('.vercel.app') ||
+          cleanReqOrigin.includes('localhost') ||
+          cleanReqOrigin.includes('127.0.0.1');
+
+        if (isExplicitlyAllowed || isVercelOrLocal) {
+          callback(null, cleanReqOrigin);
+        } else {
+          callback(new Error(`Origin ${requestOrigin} not permitted by CORS policy`));
+        }
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],

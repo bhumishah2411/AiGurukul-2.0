@@ -783,11 +783,22 @@ function generateSolvableBoard(): number[] {
 
 export default function GamificationPage() {
   const { user, loading: authLoading, logout } = useAuth();
+  const guestUser = useMemo(
+    () => ({
+      id: 'guest_seeker',
+      displayName: 'Seeker',
+      email: 'seeker@aigurukul.org',
+    }),
+    []
+  );
+  const activeUser = user || guestUser;
+
 
   // Screen State
   const [screen, setScreen] = useState<'categories' | 'saga-map' | 'puzzle-play' | 'boutique'>('categories');
   const [selectedCategory, setSelectedCategory] = useState<GameCategory>('ramayana');
   const [selectedLevelId, setSelectedLevelId] = useState<number>(1);
+  const [sagaViewMode, setSagaViewMode] = useState<'map' | 'grid'>('map');
 
   // Persistent Game State (Per Authenticated User)
   const [coins, setCoins] = useState<number>(150);
@@ -1090,34 +1101,24 @@ export default function GamificationPage() {
       }
 
       // Save immediately to user record
-      if (user?.id) {
-        const userKey = `aigurukul_game_user_${user.id}`;
-        try {
-          localStorage.setItem(
-            userKey,
-            JSON.stringify({
-              userId: user.id,
-              userName: user.displayName || user.email,
-              coins: nextCoins,
-              unlockedLevels: nextUnlocked,
-              completedLevels: nextCompleted,
-              inventory,
-              updatedAt: new Date().toISOString(),
-            })
-          );
-        } catch {}
-
-        apiClient('/gamification/award-xp', {
-          method: 'POST',
-          body: JSON.stringify({
-            xp: 50,
-            coins: rewardCoins,
-            reason: `Solved ${selectedCategory} Level ${selectedLevelId}`,
-          }),
-        }).catch(() => {});
+      const userKey = `aigurukul_game_user_${activeUser.id}`;
+      try {
+        localStorage.setItem(
+          userKey,
+          JSON.stringify({
+            userId: activeUser.id,
+            userName: activeUser.displayName || activeUser.email,
+            coins: nextCoins,
+            unlockedLevels: nextUnlocked,
+            completedLevels: nextCompleted,
+            inventory,
+            updatedAt: new Date().toISOString(),
+          })
+        );
+      } catch {
+        // Ignore
       }
-
-      showToast(`🏆 Level ${selectedLevelId} Conquered! Saved to ${user?.displayName || 'Seeker'} (+${rewardCoins} 🪙)`);
+      showToast(`🏆 Level ${selectedLevelId} Conquered! Saved to ${activeUser.displayName || 'Seeker'} (+${rewardCoins} 🪙)`);
     }
   }
 
@@ -1140,22 +1141,21 @@ export default function GamificationPage() {
       triggerSound('guess_correct');
       showToast(`✨ Brilliant! +${currentGuessPoints} Coins added to your vault!`);
 
-      if (user?.id) {
-        const userKey = `aigurukul_game_user_${user.id}`;
-        try {
-          localStorage.setItem(
-            userKey,
-            JSON.stringify({
-              userId: user.id,
-              userName: user.displayName || user.email,
-              coins: nextCoins,
-              unlockedLevels,
-              completedLevels,
-              inventory,
-              updatedAt: new Date().toISOString(),
-            })
-          );
-        } catch {}
+      const userKey = `aigurukul_game_user_${activeUser.id}`;
+      try {
+        localStorage.setItem(
+          userKey,
+          JSON.stringify({
+            userId: activeUser.id,
+            userName: activeUser.displayName || activeUser.email,
+            coins: nextCoins,
+            unlockedLevels,
+            completedLevels,
+            inventory,
+            updatedAt: new Date().toISOString(),
+          })
+        );
+      } catch {}
 
         apiClient('/gamification/award-xp', {
           method: 'POST',
@@ -1165,7 +1165,6 @@ export default function GamificationPage() {
             reason: `Recognized ${activeLevelData.name} in ${selectedCategory}`,
           }),
         }).catch(() => {});
-      }
     } else {
       triggerSound('slide');
       setGuessFeedback(`Not quite! Reflect upon the divine hints above and try again.`);
@@ -1226,289 +1225,6 @@ export default function GamificationPage() {
     const others = list.filter((n) => n !== current).sort(() => Math.random() - 0.5).slice(0, 3);
     return [current, ...others].sort(() => Math.random() - 0.5);
   }, [activeLevelData, selectedCategory]);
-
-  if (authLoading) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          background: '#0D0B08',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#F2D675',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          gap: '1.25rem',
-        }}
-      >
-        <div style={{ fontSize: '3.5rem', animation: 'spin 4s linear infinite' }}>🔱</div>
-        <div style={{ fontFamily: 'var(--font-serif, serif)', fontSize: '1.6rem', color: '#F2D675', letterSpacing: '0.06em' }}>
-          Awakening Gurukul Sanctum...
-        </div>
-        <p style={{ color: '#9A9078', fontSize: '0.95rem' }}>Aligning seeker credentials with sacred chronicles</p>
-      </div>
-    );
-  }
-
-  // Sanctum Login Required Gate
-  if (!user) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          background: '#0D0B08',
-          backgroundImage:
-            'radial-gradient(circle at 50% 25%, rgba(212, 175, 55, 0.12) 0%, transparent 65%), linear-gradient(180deg, #0D0B08 0%, #15110A 100%)',
-          color: '#EDE8D5',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          padding: '2.5rem 1.5rem',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '680px',
-            width: '100%',
-            background: 'rgba(25, 21, 14, 0.95)',
-            border: '2px solid rgba(212, 175, 55, 0.45)',
-            borderRadius: '24px',
-            padding: '3rem 2.2rem',
-            textAlign: 'center',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.85), 0 0 40px rgba(212, 175, 55, 0.15)',
-            backdropFilter: 'blur(16px)',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Top Gold Accent Line */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '80%',
-              height: '3px',
-              background: 'linear-gradient(90deg, transparent, #F2D675, #D4AF37, transparent)',
-            }}
-          />
-
-          {/* Sacred Crest */}
-          <div
-            style={{
-              width: '84px',
-              height: '84px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, rgba(13, 11, 8, 0.9) 100%)',
-              border: '2px solid #D4AF37',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '2.6rem',
-              margin: '0 auto 1.25rem',
-              boxShadow: '0 0 30px rgba(212, 175, 55, 0.35)',
-            }}
-          >
-            🔱
-          </div>
-
-          <div
-            style={{
-              display: 'inline-block',
-              background: 'rgba(212, 175, 55, 0.15)',
-              border: '1px solid rgba(212, 175, 55, 0.4)',
-              padding: '0.35rem 1rem',
-              borderRadius: '20px',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              color: '#F2D675',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              marginBottom: '1rem',
-            }}
-          >
-            Seeker Authentication Required
-          </div>
-
-          <h1
-            style={{
-              fontFamily: 'var(--font-serif, serif)',
-              fontSize: '2.1rem',
-              color: '#F2D675',
-              letterSpacing: '0.04em',
-              marginBottom: '0.8rem',
-              lineHeight: 1.25,
-            }}
-          >
-            The Divine Saga Awaits, Seeker
-          </h1>
-
-          <p
-            style={{
-              color: '#BDB399',
-              fontSize: '0.98rem',
-              lineHeight: 1.6,
-              marginBottom: '2rem',
-              maxWidth: '560px',
-              margin: '0 auto 2rem',
-            }}
-          >
-            To play the 20-level sliding jigsaw odyssey across the 5 sacred realms, save your completed levels, earn divine coins, and customize your spiritual avatar, please log in with your Seeker account.
-          </p>
-
-          {/* 5 Realms Mini-Badges */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              gap: '0.65rem',
-              marginBottom: '2.2rem',
-            }}
-          >
-            {CATEGORIES.map((cat) => (
-              <div
-                key={cat.id}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(212, 175, 55, 0.25)',
-                  borderRadius: '12px',
-                  padding: '0.45rem 0.85rem',
-                  fontSize: '0.8rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  color: '#EDE8D5',
-                }}
-              >
-                <span>{cat.icon}</span>
-                <span style={{ fontWeight: 600 }}>{cat.name}</span>
-                <span style={{ color: '#D4AF37', fontSize: '0.75rem' }}>(20 Lvls)</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Primary Authentication CTAs */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxWidth: '420px', margin: '0 auto' }}>
-            <button
-              onClick={() => {
-                window.location.href = '/login?redirect=/gamification';
-              }}
-              style={{
-                background: 'linear-gradient(135deg, #F2D675 0%, #D4AF37 100%)',
-                color: '#0D0B08',
-                fontWeight: 800,
-                fontSize: '1.05rem',
-                letterSpacing: '0.05em',
-                padding: '0.85rem 1.8rem',
-                borderRadius: '10px',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                boxShadow: '0 4px 20px rgba(212, 175, 55, 0.45)',
-                transition: 'transform 0.15s ease',
-              }}
-            >
-              🔑 Log In to Embark
-            </button>
-
-            <button
-              onClick={() => {
-                window.location.href = '/register?redirect=/gamification';
-              }}
-              style={{
-                background: 'rgba(212, 175, 55, 0.1)',
-                color: '#F2D675',
-                fontWeight: 700,
-                fontSize: '0.95rem',
-                letterSpacing: '0.04em',
-                padding: '0.75rem 1.8rem',
-                borderRadius: '10px',
-                border: '1px solid rgba(212, 175, 55, 0.45)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-              }}
-            >
-              ✨ Register New Seeker Account
-            </button>
-          </div>
-
-          {/* Multi-User Testing Mode */}
-          <div
-            style={{
-              marginTop: '2.5rem',
-              paddingTop: '1.8rem',
-              borderTop: '1px dashed rgba(212, 175, 55, 0.25)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '0.78rem',
-                color: '#9A9078',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                marginBottom: '0.85rem',
-              }}
-            >
-              🧪 Instant Multi-User Test Profiles (Separate Saga Tracks)
-            </div>
-            <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => loginAsDemoUser('user1')}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(212, 175, 55, 0.3)',
-                  color: '#EDE8D5',
-                  padding: '0.55rem 1rem',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                }}
-              >
-                👤 Play as User 1 (Seeker Arjuna)
-              </button>
-              <button
-                onClick={() => loginAsDemoUser('user2')}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(212, 175, 55, 0.3)',
-                  color: '#EDE8D5',
-                  padding: '0.55rem 1rem',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                }}
-              >
-                👤 Play as User 2 (Seeker Draupadi)
-              </button>
-            </div>
-            <p style={{ color: '#736B59', fontSize: '0.75rem', marginTop: '0.6rem' }}>
-              Levels solved by User 1 remain exclusively on User 1&apos;s track and never affect User 2.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -1604,7 +1320,7 @@ export default function GamificationPage() {
             }}
           >
             <span>🧘</span>
-            <span>{user.displayName || user.email.split('@')[0]}</span>
+            <span>{activeUser.displayName || activeUser.email.split('@')[0]}</span>
             <span
               style={{
                 background: '#D4AF37',
@@ -1760,10 +1476,10 @@ export default function GamificationPage() {
                 <span style={{ fontSize: '1.8rem' }}>🧘</span>
                 <div>
                   <h3 style={{ margin: 0, fontFamily: 'var(--font-serif, serif)', color: '#F2D675', fontSize: '1.3rem' }}>
-                    {user?.displayName || user?.email}
+                    {activeUser.displayName || activeUser.email}
                   </h3>
                   <span style={{ fontSize: '0.75rem', color: '#9A9078' }}>
-                    Seeker ID: {user?.id} • {user?.email}
+                    Seeker ID: {activeUser.id} • {activeUser.email}
                   </span>
                 </div>
               </div>
@@ -1951,12 +1667,12 @@ export default function GamificationPage() {
                 marginBottom: '0.85rem',
               }}
             >
-              🧘 Seeker: <strong>{user?.displayName || user?.email}</strong> • {completedLevels.length} of 100 Levels Conquered
+              🧘 Seeker: <strong>{activeUser.displayName || activeUser.email}</strong> • {completedLevels.length} of 100 Levels Conquered
             </div>
             <h1
               style={{
                 fontFamily: 'var(--font-serif, serif)',
-                fontSize: '2.5rem',
+                fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
                 color: '#D4AF37',
                 letterSpacing: '0.04em',
                 marginBottom: '0.5rem',
@@ -2085,7 +1801,7 @@ export default function GamificationPage() {
               {activeCategoryData.icon} {activeCategoryData.name} SAGA MAP
             </span>
             <p style={{ color: '#9A9078', fontSize: '0.9rem', marginTop: '0.2rem' }}>
-              Seeker <strong>{user?.displayName || user?.email}</strong>: {completedLevels.filter((k) => k.startsWith(`${selectedCategory}-`)).length} of 20 Challenges Mastered
+              Seeker <strong>{activeUser.displayName || activeUser.email}</strong>: {completedLevels.filter((k) => k.startsWith(`${selectedCategory}-`)).length} of 20 Challenges Mastered
             </p>
           </div>
 
@@ -2647,7 +2363,7 @@ export default function GamificationPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
               gap: '2.5rem',
               alignItems: 'start',
             }}
@@ -2893,89 +2609,97 @@ export default function GamificationPage() {
             position: 'fixed',
             inset: 0,
             zIndex: 9999,
-            background: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(0, 0, 0, 0.82)',
+            backdropFilter: 'blur(6px)',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'center',
-            padding: '1.5rem',
+            paddingTop: '2.5rem',
+            paddingLeft: '1rem',
+            paddingRight: '1rem',
+            paddingBottom: '1rem',
           }}
+          onClick={() => setShowTutorial(false)}
         >
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '460px',
+              maxWidth: '350px',
               background: '#1A160E',
-              border: '2px solid #D4AF37',
-              borderRadius: '16px',
-              padding: '2rem 1.75rem',
-              boxShadow: '0 16px 48px rgba(0, 0, 0, 0.9)',
+              border: '1.5px solid #D4AF37',
+              borderRadius: '12px',
+              padding: '1rem 1.15rem',
+              boxShadow: '0 16px 48px rgba(0, 0, 0, 0.95)',
               textAlign: 'center',
             }}
           >
             {/* Close Cross */}
             <button
               onClick={() => setShowTutorial(false)}
+              aria-label="Close tutorial"
               style={{
                 position: 'absolute',
-                top: '1rem',
-                right: '1rem',
+                top: '0.6rem',
+                right: '0.6rem',
                 background: 'transparent',
                 border: 'none',
                 color: '#9A9078',
-                fontSize: '1.4rem',
+                fontSize: '1.2rem',
                 cursor: 'pointer',
+                padding: '0.2rem',
+                lineHeight: 1,
               }}
             >
               ✕
             </button>
 
             {/* Scroll Icon Header */}
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>📜</div>
+            <div style={{ fontSize: '1.5rem', marginBottom: '0.1rem' }}>📜</div>
             <h2
               style={{
                 fontFamily: 'var(--font-serif, serif)',
-                fontSize: '1.55rem',
+                fontSize: '1.15rem',
                 color: '#F2D675',
                 letterSpacing: '0.04em',
-                margin: '0 0 0.2rem 0',
+                margin: '0 0 0.1rem 0',
               }}
             >
               HOW TO PLAY
             </h2>
             <p
               style={{
-                fontSize: '0.72rem',
+                fontSize: '0.62rem',
                 color: '#9A9078',
-                letterSpacing: '0.15em',
+                letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                margin: '0 0 1.5rem 0',
+                margin: '0 0 0.75rem 0',
               }}
             >
               YOUR JOURNEY BEGINS HERE
             </p>
 
-            {/* 4 Step Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', textAlign: 'left', marginBottom: '1.8rem' }}>
+            {/* 4 Step Cards (Small & compact) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', textAlign: 'left', marginBottom: '0.85rem' }}>
               {/* Step 1 */}
               <div
                 style={{
                   background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(212, 175, 55, 0.2)',
-                  borderRadius: '10px',
-                  padding: '0.85rem 1rem',
+                  border: '1px solid rgba(212, 175, 55, 0.16)',
+                  borderRadius: '7px',
+                  padding: '0.4rem 0.65rem',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '1rem',
+                  gap: '0.65rem',
                 }}
               >
-                <span style={{ fontSize: '1.8rem' }}>🧩</span>
+                <span style={{ fontSize: '1.15rem' }}>🧩</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.92rem', color: '#F2D675', fontWeight: 700 }}>
+                  <h4 style={{ margin: 0, fontSize: '0.78rem', color: '#F2D675', fontWeight: 700 }}>
                     SLIDE PIECES
                   </h4>
-                  <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: '#9A9078' }}>
+                  <p style={{ margin: '0.1rem 0 0 0', fontSize: '0.68rem', color: '#9A9078', lineHeight: 1.25 }}>
                     Tap a puzzle piece next to the empty slot to slide it into place.
                   </p>
                 </div>
@@ -2985,20 +2709,20 @@ export default function GamificationPage() {
               <div
                 style={{
                   background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(212, 175, 55, 0.2)',
-                  borderRadius: '10px',
-                  padding: '0.85rem 1rem',
+                  border: '1px solid rgba(212, 175, 55, 0.16)',
+                  borderRadius: '7px',
+                  padding: '0.4rem 0.65rem',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '1rem',
+                  gap: '0.65rem',
                 }}
               >
-                <span style={{ fontSize: '1.8rem' }}>💡</span>
+                <span style={{ fontSize: '1.15rem' }}>💡</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.92rem', color: '#F2D675', fontWeight: 700 }}>
+                  <h4 style={{ margin: 0, fontSize: '0.78rem', color: '#F2D675', fontWeight: 700 }}>
                     UNLOCK HINTS
                   </h4>
-                  <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: '#9A9078' }}>
+                  <p style={{ margin: '0.1rem 0 0 0', fontSize: '0.68rem', color: '#9A9078', lineHeight: 1.25 }}>
                     Place a piece in its correct spot to reveal a Divine Hint.
                   </p>
                 </div>
@@ -3008,20 +2732,20 @@ export default function GamificationPage() {
               <div
                 style={{
                   background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(212, 175, 55, 0.2)',
-                  borderRadius: '10px',
-                  padding: '0.85rem 1rem',
+                  border: '1px solid rgba(212, 175, 55, 0.16)',
+                  borderRadius: '7px',
+                  padding: '0.4rem 0.65rem',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '1rem',
+                  gap: '0.65rem',
                 }}
               >
-                <span style={{ fontSize: '1.8rem' }}>🤔</span>
+                <span style={{ fontSize: '1.15rem' }}>🤔</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.92rem', color: '#F2D675', fontWeight: 700 }}>
+                  <h4 style={{ margin: 0, fontSize: '0.78rem', color: '#F2D675', fontWeight: 700 }}>
                     GUESS THE NAME
                   </h4>
-                  <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: '#9A9078' }}>
+                  <p style={{ margin: '0.1rem 0 0 0', fontSize: '0.68rem', color: '#9A9078', lineHeight: 1.25 }}>
                     Use hints to guess the answer! Earlier guesses earn more 🪙 coins.
                   </p>
                 </div>
@@ -3031,20 +2755,20 @@ export default function GamificationPage() {
               <div
                 style={{
                   background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(212, 175, 55, 0.2)',
-                  borderRadius: '10px',
-                  padding: '0.85rem 1rem',
+                  border: '1px solid rgba(212, 175, 55, 0.16)',
+                  borderRadius: '7px',
+                  padding: '0.4rem 0.65rem',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '1rem',
+                  gap: '0.65rem',
                 }}
               >
-                <span style={{ fontSize: '1.8rem' }}>🏆</span>
+                <span style={{ fontSize: '1.15rem' }}>🏆</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.92rem', color: '#F2D675', fontWeight: 700 }}>
+                  <h4 style={{ margin: 0, fontSize: '0.78rem', color: '#F2D675', fontWeight: 700 }}>
                     COMPLETE & EARN
                   </h4>
-                  <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: '#9A9078' }}>
+                  <p style={{ margin: '0.1rem 0 0 0', fontSize: '0.68rem', color: '#9A9078', lineHeight: 1.25 }}>
                     Finish the puzzle to progress and unlock Avatar shop items!
                   </p>
                 </div>
@@ -3059,12 +2783,17 @@ export default function GamificationPage() {
                 background: 'linear-gradient(135deg, #F2D675 0%, #D4AF37 100%)',
                 color: '#0D0B08',
                 fontWeight: 700,
-                fontSize: '0.95rem',
+                fontSize: '0.82rem',
                 letterSpacing: '0.04em',
-                padding: '0.85rem',
-                borderRadius: '8px',
+                padding: '0.55rem 1rem',
+                borderRadius: '7px',
                 border: 'none',
                 cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.35rem',
+                boxShadow: '0 4px 14px rgba(212, 175, 55, 0.3)',
               }}
             >
               START JOURNEY ✨

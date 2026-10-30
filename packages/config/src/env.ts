@@ -13,7 +13,7 @@ const CommonEnvSchema = z.object({
 });
 
 export const ApiEnvSchema = CommonEnvSchema.extend({
-  PORT: z.coerce.number().default(5000),
+  PORT: z.coerce.number().default(10000),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
   MONGODB_URI: z.string().default('mongodb://localhost:27017/aigurukul_dev'),
   REDIS_URL: z.string().default('redis://localhost:6379'),
@@ -36,7 +36,7 @@ export const ApiEnvSchema = CommonEnvSchema.extend({
   ANTHROPIC_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
-  GROQ_MODEL: z.string().default('llama-3.3-70b-versatile'),
+  GROQ_MODEL: z.string().default('openai/gpt-oss-120b'),
   GEMINI_MODEL: z.string().default('gemini-1.5-pro'),
   OPENAI_MODEL: z.string().default('gpt-4o'),
   PINECONE_API_KEY: z.string().optional(),
@@ -58,7 +58,9 @@ export type ApiConfig = z.infer<typeof ApiEnvSchema>;
 export type WorkerConfig = z.infer<typeof WorkerEnvSchema>;
 
 export function loadApiConfig(overrides?: Record<string, unknown>): ApiConfig {
-  const parsed = ApiEnvSchema.safeParse({ ...process.env, ...overrides });
+  const isTest = (overrides?.NODE_ENV || process.env.NODE_ENV) === 'test';
+  const baseEnv = isTest && !overrides?.AI_PROVIDER ? { ...process.env, AI_PROVIDER: 'local' } : process.env;
+  const parsed = ApiEnvSchema.safeParse({ ...baseEnv, ...overrides });
   if (!parsed.success) {
     console.error('❌ Invalid API Environment Configuration:');
     console.error(JSON.stringify(parsed.error.format(), null, 2));

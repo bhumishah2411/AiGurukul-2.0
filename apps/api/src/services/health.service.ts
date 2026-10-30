@@ -26,7 +26,7 @@ export class HealthService {
     const services: HealthStatus['services'] = {};
     let isReady = true;
 
-    // Check MongoDB
+    // Check MongoDB (Primary Data Store)
     if (this.dbService) {
       const dbPing = await this.dbService.ping();
       services.database = {
@@ -36,7 +36,7 @@ export class HealthService {
       if (!dbPing.healthy) isReady = false;
     }
 
-    // Check Redis
+    // Check Redis (Optional Cache Layer)
     if (this.redisClient) {
       const start = Date.now();
       try {
@@ -46,10 +46,8 @@ export class HealthService {
           status: pong === 'PONG' ? 'up' : 'down',
           latencyMs,
         };
-        if (pong !== 'PONG') isReady = false;
       } catch {
         services.redis = { status: 'down', latencyMs: Date.now() - start };
-        isReady = false;
       }
     }
 

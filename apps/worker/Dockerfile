@@ -1,5 +1,5 @@
 # =========================================================================
-# AI Gurukul Background Worker Service - Production Multi-Stage Dockerfile
+# AI Gurukul Background Worker Service - Production Dockerfile
 # =========================================================================
 
 # Stage 1: Base Environment
@@ -16,10 +16,10 @@ COPY package.json package-lock.json turbo.json tsconfig.base.json ./
 COPY packages/ ./packages/
 COPY apps/worker/ ./apps/worker/
 
-# Install workspace dependencies
+# Install all workspace dependencies cleanly
 RUN npm ci
 
-# Compile packages and worker service
+# Compile TypeScript packages and Worker service
 RUN npm run build --workspace=@ai-gurukul/config \
     --workspace=@ai-gurukul/types \
     --workspace=@ai-gurukul/logging \
@@ -37,14 +37,17 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Hardened security: run as non-root standard node user
-USER node
+# Pre-create writable storage directory and assign /app ownership to node user
+RUN mkdir -p /app/.storage && chown -R node:node /app
 
 # Copy compiled files, packages, and node_modules
 COPY --chown=node:node --from=builder /app/package.json /app/package-lock.json ./
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/packages ./packages
 COPY --chown=node:node --from=builder /app/apps/worker ./apps/worker
+
+# Hardened security: run as non-root standard node user
+USER node
 
 # Launch worker daemon
 CMD ["node", "apps/worker/dist/index.js"]

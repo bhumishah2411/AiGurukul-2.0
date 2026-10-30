@@ -38,8 +38,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=5000
 
-# Hardened security: run as non-root standard node user
-USER node
+# Pre-create writable storage directory and assign /app ownership to node user
+RUN mkdir -p /app/.storage && chown -R node:node /app
 
 # Copy compiled files, packages, and node_modules
 COPY --chown=node:node --from=builder /app/package.json /app/package-lock.json ./
@@ -47,11 +47,14 @@ COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/packages ./packages
 COPY --chown=node:node --from=builder /app/apps/api ./apps/api
 
+# Hardened security: run as non-root standard node user
+USER node
+
 EXPOSE 5000
 
 # Automated container healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:5000/health/live || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:5000/health/live || exit 1
 
 # Launch production server
 CMD ["node", "apps/api/dist/server.js"]

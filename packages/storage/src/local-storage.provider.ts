@@ -1,6 +1,7 @@
 import { ObjectStorageProvider, UploadOptions } from './object-storage.interface.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
@@ -9,10 +10,20 @@ export class LocalStorageProvider implements ObjectStorageProvider {
   private baseDir: string;
 
   constructor(baseDir = '.storage') {
-    this.baseDir = path.resolve(process.cwd(), baseDir);
-    if (!fs.existsSync(this.baseDir)) {
-      fs.mkdirSync(this.baseDir, { recursive: true });
+    let target = path.resolve(process.cwd(), baseDir);
+    try {
+      if (!fs.existsSync(target)) {
+        fs.mkdirSync(target, { recursive: true });
+      }
+    } catch {
+      // In containerized/restricted environments (e.g. non-root Docker user on Render where /app is read-only),
+      // gracefully fall back to the operating system's standard writable temporary directory
+      target = path.resolve(os.tmpdir(), 'aigurukul-storage');
+      if (!fs.existsSync(target)) {
+        fs.mkdirSync(target, { recursive: true });
+      }
     }
+    this.baseDir = target;
   }
 
   public async upload(
@@ -24,7 +35,11 @@ export class LocalStorageProvider implements ObjectStorageProvider {
     const parentDir = path.dirname(filePath);
 
     if (!fs.existsSync(parentDir)) {
-      fs.mkdirSync(parentDir, { recursive: true });
+      try {
+        fs.mkdirSync(parentDir, { recursive: true });
+      } catch {
+        // Parent directory may already exist or handle gracefully
+      }
     }
 
     if (Buffer.isBuffer(data)) {
