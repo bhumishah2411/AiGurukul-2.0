@@ -1522,26 +1522,26 @@ export default function GamificationPage() {
         <div className="game-header-mobile" style={{ width: '100%' }}>
           {/* Row 1: Logo & Exit on Left | Rules & Title on Right */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '0.45rem', gap: '0.35rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
               <a
                 href="/"
                 style={{
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.35rem',
+                  gap: '0.3rem',
                   textDecoration: 'none',
                   color: '#F2D675',
                 }}
                 title="Return to Sacred Sanctum Home"
               >
-                <span style={{ fontSize: '1.15rem' }}>🪷</span>
+                <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>🪷</span>
                 <span
                   className="game-brand-text"
                   style={{
                     fontFamily: 'var(--font-serif, serif)',
                     fontWeight: 800,
-                    fontSize: '0.85rem',
-                    letterSpacing: '0.06em',
+                    fontSize: 'clamp(0.72rem, 2.3vw, 0.82rem)',
+                    letterSpacing: '0.04em',
                     color: '#F2D675',
                     whiteSpace: 'nowrap',
                   }}
@@ -1557,17 +1557,18 @@ export default function GamificationPage() {
                   else if (screen === 'saga-map') setScreen('categories');
                   else if (screen === 'categories') window.location.href = '/';
                 }}
+                className="game-exit-btn"
                 style={{
                   background: '#D4AF37',
                   color: '#0D0B08',
                   fontWeight: 700,
-                  fontSize: '0.74rem',
-                  letterSpacing: '0.04em',
-                  padding: '0.3rem 0.55rem',
+                  fontSize: 'clamp(0.66rem, 2.1vw, 0.74rem)',
+                  letterSpacing: '0.03em',
+                  padding: '0.26rem 0.48rem',
                   borderRadius: '5px',
                   border: 'none',
                   cursor: 'pointer',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.2rem',
                   whiteSpace: 'nowrap',
@@ -1577,49 +1578,50 @@ export default function GamificationPage() {
               </button>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0, minWidth: 0 }}>
               {/* Rules Button - prominent, fully visible, never clipped */}
               <button
                 onClick={() => setShowTutorial(true)}
                 title="How to Play / Rules"
+                className="game-rules-btn"
                 style={{
                   background: 'rgba(212, 175, 55, 0.16)',
                   border: '1px solid #D4AF37',
                   color: '#F2D675',
-                  padding: '0.26rem 0.55rem',
+                  padding: '0.24rem 0.45rem',
                   borderRadius: '6px',
-                  fontSize: '0.74rem',
+                  fontSize: 'clamp(0.66rem, 2.1vw, 0.74rem)',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.25rem',
+                  gap: '0.2rem',
                   whiteSpace: 'nowrap',
                   boxShadow: '0 0 8px rgba(212, 175, 55, 0.25)',
+                  flexShrink: 0,
                 }}
               >
-                <span>📜</span>
+                <span style={{ fontSize: '0.8rem' }}>📜</span>
                 <span>Rules</span>
               </button>
 
               {/* Realm Title Pill */}
               <span
+                className="game-realm-pill"
                 style={{
                   fontFamily: 'var(--font-serif, serif)',
-                  fontSize: '0.72rem',
+                  fontSize: 'clamp(0.64rem, 2.1vw, 0.72rem)',
                   fontWeight: 700,
                   color: '#F2D675',
                   background: 'rgba(212, 175, 55, 0.12)',
                   border: '1px solid rgba(212, 175, 55, 0.3)',
                   borderRadius: '6px',
-                  padding: '0.22rem 0.5rem',
-                  letterSpacing: '0.04em',
+                  padding: '0.22rem 0.45rem',
+                  letterSpacing: '0.03em',
                   textTransform: 'uppercase',
                   whiteSpace: 'nowrap',
-                  maxWidth: '120px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  display: 'inline-block',
+                  display: 'inline-flex',
+                  alignItems: 'center',
                   flexShrink: 0,
                 }}
               >
