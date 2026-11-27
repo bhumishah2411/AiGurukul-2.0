@@ -244,6 +244,7 @@ function SafeMessageContent({
             <button
               key={`cite-${idx}`}
               type="button"
+              suppressHydrationWarning
               onClick={() => onCitationClick && onCitationClick(matchedCitation)}
               style={{
                 display: 'inline-flex',
@@ -327,6 +328,7 @@ export default function WisdomChatPage() {
   const [streamBuffer, setStreamBuffer] = useState('');
   const [activeCitations, setActiveCitations] = useState<MessageCitation[]>([]);
   const [inspectedCitation, setInspectedCitation] = useState<MessageCitation | null>(null);
+  const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
 
   const chatScrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -367,14 +369,19 @@ export default function WisdomChatPage() {
     loadPersonas();
   }, []);
 
-  // Load conversations from backend
+  // Load conversations from backend (only when authenticated)
   const loadConversations = async () => {
+    if (!user) return;
     try {
       const authHeaders = await getAuthHeaders();
       const res = await fetch(`${API_BASE}/wisdom/conversations`, {
         headers: authHeaders,
         credentials: 'include',
       });
+      if (!res.ok) {
+        if (res.status === 401) return;
+        return;
+      }
       const json = await res.json();
       if (json.success && json.data?.items) {
         setConversations(json.data.items);
@@ -382,13 +389,17 @@ export default function WisdomChatPage() {
           loadConversationThread(json.data.items[0].id);
         }
       }
-    } catch (err) {
-      console.error('Failed to load conversations', err);
+    } catch {
+      // Graceful fallback
     }
   };
 
   useEffect(() => {
-    loadConversations();
+    if (user) {
+      loadConversations();
+    } else {
+      setConversations([]);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -396,12 +407,15 @@ export default function WisdomChatPage() {
   const loadConversationThread = async (convId: string) => {
     setActiveConversationId(convId);
     setStreamBuffer('');
+    setMobileHistoryOpen(false);
+    if (!user) return;
     try {
       const authHeaders = await getAuthHeaders();
       const res = await fetch(`${API_BASE}/wisdom/conversations/${convId}`, {
         headers: authHeaders,
         credentials: 'include',
       });
+      if (!res.ok) return;
       const json = await res.json();
       if (json.success && json.data) {
         setMessages(json.data.messages || []);
@@ -409,8 +423,8 @@ export default function WisdomChatPage() {
           setSelectedPersona(json.data.persona);
         }
       }
-    } catch (err) {
-      console.error('Failed to load thread', err);
+    } catch {
+      // Graceful fallback
     }
   };
 
@@ -421,6 +435,7 @@ export default function WisdomChatPage() {
     setMessages([]);
     setStreamBuffer('');
     setActiveCitations([]);
+    setMobileHistoryOpen(false);
 
     if (initialPrompt) {
       handleSendMessage(undefined, initialPrompt, persona);
@@ -585,33 +600,25 @@ export default function WisdomChatPage() {
 
   return (
     <div
-      className="temple-container"
+      className="temple-container wisdom-page-container"
+      suppressHydrationWarning
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: 'calc(100vh - 4rem)',
-        padding: '1.5rem',
         maxWidth: '1350px',
       }}
     >
       {/* Subpage Breadcrumb Bar */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingBottom: '1rem',
-          borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div className="wisdom-header-bar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
           <Link
             href="/"
             style={{
               color: 'var(--text-dust)',
-              fontSize: '0.9rem',
+              fontSize: '0.85rem',
               textDecoration: 'none',
               transition: 'color 0.2s',
+              whiteSpace: 'nowrap',
             }}
           >
             ← Sanctum
@@ -620,11 +627,10 @@ export default function WisdomChatPage() {
           <h1
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: '1.25rem',
               margin: 0,
               display: 'inline-block',
             }}
-            className="gold-gradient-text"
+            className="gold-gradient-text wisdom-header-title"
           >
             Vedic Wisdom Dialogue
           </h1>
@@ -633,32 +639,219 @@ export default function WisdomChatPage() {
             style={{
               borderColor: 'rgba(123, 104, 238, 0.4)',
               color: '#c4b5fd',
-              fontSize: '0.7rem',
-              marginLeft: '0.25rem',
+              fontSize: '0.68rem',
+              marginLeft: '0.2rem',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              lineHeight: 1.2,
             }}
           >
             Live SSE Stream
           </span>
         </div>
 
-        {user ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-dust)' }}>
-              Seeker: <strong style={{ color: 'var(--gold-radiance)' }}>{user.displayName}</strong>
-            </span>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Link
-              href="/login"
-              className="btn-outline-sacred"
-              style={{ padding: '0.35rem 0.85rem', fontSize: '0.8rem' }}
-            >
-              Sign In to Save History
-            </Link>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', flexShrink: 0 }}>
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-dust)', whiteSpace: 'nowrap' }}>
+                Seeker: <strong style={{ color: 'var(--gold-radiance)' }}>{user.displayName}</strong>
+              </span>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Link
+                href="/login"
+                className="btn-outline-sacred"
+                style={{ padding: '0.3rem 0.75rem', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
+              >
+                Sign In to Save History
+              </Link>
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="wisdom-mobile-history-toggle"
+            suppressHydrationWarning
+            onClick={() => setMobileHistoryOpen(!mobileHistoryOpen)}
+            style={{
+              background: mobileHistoryOpen ? 'rgba(212, 175, 55, 0.25)' : 'rgba(212, 175, 55, 0.08)',
+              border: '1px solid rgba(212, 175, 55, 0.25)',
+              color: 'var(--gold-radiance)',
+              padding: '0.3rem 0.65rem',
+              borderRadius: '6px',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              alignItems: 'center',
+              gap: '0.3rem',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            📜 History {conversations.length > 0 && `(${conversations.length})`}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile-Only Horizontally Scrollable Persona Selector (< 1024px) */}
+      <div
+        className="wisdom-mobile-persona-bar"
+        style={{
+          gap: '0.45rem',
+          overflowX: 'auto',
+          padding: '0.45rem 0.15rem',
+          scrollbarWidth: 'none',
+          WebkitOverflowScrolling: 'touch',
+          flexShrink: 0,
+        }}
+      >
+        {personas.map((p) => {
+          const isSelected = selectedPersona === p.id;
+          return (
+            <button
+              key={`mob-${p.id}`}
+              type="button"
+              suppressHydrationWarning
+              onClick={() => startNewDialogue(p.id)}
+              className="wisdom-persona-tab"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.35rem 0.7rem',
+                borderRadius: '20px',
+                border: isSelected
+                  ? `1.5px solid ${p.color}`
+                  : '1px solid rgba(212, 175, 55, 0.2)',
+                background: isSelected
+                  ? `linear-gradient(135deg, ${p.color}28 0%, rgba(13, 11, 8, 0.95) 100%)`
+                  : 'rgba(255, 255, 255, 0.03)',
+                color: isSelected ? 'var(--text-vellum)' : 'var(--text-dust)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                fontSize: 'clamp(0.78rem, 2vw, 0.84rem)',
+                fontWeight: isSelected ? 700 : 500,
+                boxShadow: isSelected ? `0 2px 10px ${p.color}35` : 'none',
+                transition: 'all 0.18s ease',
+              }}
+              title={`${p.name} - ${p.domain}`}
+            >
+              <span style={{ fontSize: '0.95rem', lineHeight: 1 }}>{p.avatarIcon}</span>
+              <span style={{ color: isSelected ? p.color : 'inherit' }}>{p.name}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Mobile Dialogue History Collapsible Panel (< 1024px) */}
+      {mobileHistoryOpen && (
+        <div
+          className="wisdom-mobile-history-panel"
+          style={{
+            background: 'var(--surface-wood)',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            borderRadius: '8px',
+            padding: '0.85rem',
+            marginBottom: '0.5rem',
+            maxHeight: '220px',
+            overflowY: 'auto',
+            flexShrink: 0,
+            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '0.6rem',
+              paddingBottom: '0.35rem',
+              borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
+            }}
+          >
+            <span
+              style={{
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                color: 'var(--gold-radiance)',
+              }}
+            >
+              📜 Past Inquiries
+            </span>
+            <button
+              type="button"
+              suppressHydrationWarning
+              onClick={() => setMobileHistoryOpen(false)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-dust)',
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+              }}
+            >
+              ✕ Close
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            {conversations.length === 0 ? (
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-dust)', fontStyle: 'italic', padding: '0.4rem 0' }}>
+                No previous inquiries. Start a new dialogue above.
+              </div>
+            ) : (
+              conversations.map((c) => {
+                const pMeta = personas.find((p) => p.id === c.persona);
+                const isCurrent = activeConversationId === c.id;
+                return (
+                  <button
+                    key={`mob-hist-${c.id}`}
+                    type="button"
+                    suppressHydrationWarning
+                    onClick={() => {
+                      loadConversationThread(c.id);
+                      setMobileHistoryOpen(false);
+                    }}
+                    style={{
+                      padding: '0.5rem 0.65rem',
+                      borderRadius: '6px',
+                      background: isCurrent
+                        ? 'rgba(212, 175, 55, 0.16)'
+                        : 'rgba(13, 11, 8, 0.5)',
+                      border: isCurrent
+                        ? '1px solid var(--gold-sacred)'
+                        : '1px solid rgba(212, 175, 55, 0.12)',
+                      color: 'var(--text-vellum)',
+                      fontSize: '0.8rem',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.45rem',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>
+                      {pMeta?.avatarIcon || '☸'}
+                    </span>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ fontWeight: 600, color: pMeta?.color || 'var(--gold-sacred)', marginRight: '0.35rem' }}>
+                        {pMeta?.name?.split(' ')[0] || 'Sage'}:
+                      </span>
+                      <span style={{ color: isCurrent ? '#fff' : 'var(--text-vellum)' }}>{c.title}</span>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Chat Workspace */}
       <div
@@ -670,13 +863,13 @@ export default function WisdomChatPage() {
           flex: 1,
           marginTop: '1rem',
           overflow: 'hidden',
+          minHeight: 0,
         }}
       >
         {/* Left Sidebar: Personas & Thread History */}
         <aside
-          className="temple-card"
+          className="temple-card wisdom-desktop-sidebar"
           style={{
-            display: 'flex',
             flexDirection: 'column',
             gap: '1.25rem',
             padding: '1.25rem',
@@ -706,6 +899,8 @@ export default function WisdomChatPage() {
                 return (
                   <button
                     key={p.id}
+                    type="button"
+                    suppressHydrationWarning
                     onClick={() => startNewDialogue(p.id)}
                     style={{
                       display: 'flex',
@@ -786,6 +981,8 @@ export default function WisdomChatPage() {
                   return (
                     <button
                       key={c.id}
+                      type="button"
+                      suppressHydrationWarning
                       onClick={() => loadConversationThread(c.id)}
                       style={{
                         padding: '0.6rem 0.75rem',
@@ -828,19 +1025,11 @@ export default function WisdomChatPage() {
         </aside>
 
         {/* Right Main Column: Chat Thread & Input */}
-        <main
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            background: 'var(--surface-stone)',
-            borderRadius: '8px',
-            border: '1px solid rgba(212, 175, 55, 0.15)',
-            overflow: 'hidden',
-          }}
-        >
+        <main className="wisdom-chat-main">
           {/* Active Persona Banner */}
           {currentPersonaInfo && (
             <div
+              className="wisdom-active-banner"
               style={{
                 padding: '0.85rem 1.25rem',
                 background: 'var(--surface-wood)',
@@ -848,90 +1037,147 @@ export default function WisdomChatPage() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                gap: '0.5rem',
+                flexShrink: 0,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ fontSize: '1.5rem' }}>{currentPersonaInfo.avatarIcon}</span>
-                <div>
-                  <h2 style={{ fontSize: '1.1rem', margin: 0, color: currentPersonaInfo.color }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0, flex: 1 }}>
+                <span className="wisdom-banner-avatar" style={{ fontSize: '1.4rem', flexShrink: 0, lineHeight: 1 }}>
+                  {currentPersonaInfo.avatarIcon}
+                </span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <h2
+                    className="wisdom-persona-name"
+                    style={{
+                      fontSize: 'clamp(0.88rem, 2.6vw, 1.05rem)',
+                      margin: 0,
+                      color: currentPersonaInfo.color,
+                      lineHeight: 1.25,
+                      fontFamily: 'var(--font-serif)',
+                      fontWeight: 700,
+                    }}
+                  >
                     {currentPersonaInfo.name}
                   </h2>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-dust)' }}>
+                  <div
+                    className="wisdom-persona-subtitle"
+                    style={{
+                      fontSize: 'clamp(0.68rem, 2vw, 0.76rem)',
+                      color: 'var(--text-dust)',
+                      lineHeight: 1.3,
+                      marginTop: '0.15rem',
+                    }}
+                  >
                     {currentPersonaInfo.title} • {currentPersonaInfo.domain}
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => startNewDialogue(selectedPersona)}
-                className="btn-outline-sacred"
-                style={{ padding: '0.35rem 0.8rem', fontSize: '0.8rem' }}
-              >
-                + New Inquiry
-              </button>
+              <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, alignItems: 'center' }}>
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={() => startNewDialogue(selectedPersona)}
+                  className="btn-outline-sacred wisdom-new-inquiry-btn"
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    fontSize: 'clamp(0.74rem, 2.2vw, 0.8rem)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  + New Inquiry
+                </button>
+              </div>
             </div>
           )}
 
           {/* Message Thread Scroll Container */}
           <div
             ref={chatScrollContainerRef}
+            className="wisdom-chat-thread"
             style={{
               flex: 1,
-              padding: '1.5rem',
+              padding: '1.25rem',
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
-              gap: '1.25rem',
+              gap: '1rem',
+              minHeight: 0,
             }}
           >
             {messages.length === 0 && !streamBuffer && (
-              <div style={{ textAlign: 'center', margin: 'auto', maxWidth: '580px' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>
+              <div style={{ textAlign: 'center', margin: 'auto', maxWidth: '580px', width: '100%' }}>
+                <div
+                  className="wisdom-consult-avatar"
+                  style={{
+                    fontSize: 'clamp(2rem, 4.5vw, 2.35rem)',
+                    marginBottom: '0.35rem',
+                    lineHeight: 1,
+                  }}
+                >
                   {currentPersonaInfo?.avatarIcon || '🕉️'}
                 </div>
                 <h3
+                  className="wisdom-consult-title"
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: '1.5rem',
+                    fontSize: 'clamp(1.15rem, 2.8vw, 1.32rem)',
                     color: 'var(--gold-radiance)',
-                    marginBottom: '0.5rem',
+                    marginBottom: '0.45rem',
+                    fontWeight: 700,
                   }}
                 >
                   Consult {currentPersonaInfo?.name}
                 </h3>
                 <p
-                  style={{ color: 'var(--text-dust)', fontSize: '0.95rem', marginBottom: '1.5rem' }}
+                  className="wisdom-consult-desc"
+                  style={{
+                    color: 'var(--text-dust)',
+                    fontSize: 'clamp(0.85rem, 2vw, 0.92rem)',
+                    marginBottom: '1.15rem',
+                    lineHeight: 1.55,
+                    maxWidth: '520px',
+                    margin: '0 auto 1.15rem auto',
+                  }}
                 >
                   {currentPersonaInfo?.description}
                 </p>
 
-                <div style={{ textAlign: 'left', marginBottom: '1rem' }}>
+                <div style={{ textAlign: 'left', marginBottom: '0.65rem' }}>
                   <span
+                    className="wisdom-suggested-label"
                     style={{
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
+                      fontSize: '0.76rem',
+                      fontWeight: 700,
                       color: 'var(--gold-radiance)',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
+                      letterSpacing: '0.06em',
                     }}
                   >
                     Suggested Questions:
                   </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
                   {currentPersonaInfo?.sampleInquiries.map((inq) => (
                     <button
                       key={inq}
+                      type="button"
+                      suppressHydrationWarning
                       onClick={() => handleSendMessage(undefined, inq)}
+                      className="wisdom-suggested-btn"
                       style={{
-                        padding: '0.65rem 1rem',
+                        padding: '0.55rem 0.85rem',
                         background: 'rgba(13, 11, 8, 0.6)',
                         border: '1px solid rgba(212, 175, 55, 0.2)',
                         borderRadius: '6px',
                         color: 'var(--text-vellum)',
-                        fontSize: '0.85rem',
+                        fontSize: 'clamp(0.82rem, 1.9vw, 0.88rem)',
                         textAlign: 'left',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
+                        width: '100%',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'normal',
+                        lineHeight: 1.45,
                       }}
                       onMouseEnter={(e) =>
                         (e.currentTarget.style.borderColor = 'var(--gold-radiance)')
@@ -953,16 +1199,19 @@ export default function WisdomChatPage() {
               return (
                 <div
                   key={m.id}
+                  className="wisdom-msg-bubble"
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignSelf: isUser ? 'flex-end' : 'flex-start',
-                    maxWidth: '80%',
+                    minWidth: 0,
                   }}
                 >
                   <div
+                    className="wisdom-msg-sender"
                     style={{
                       fontSize: '0.75rem',
+                      fontWeight: 600,
                       color: 'var(--text-dust)',
                       marginBottom: '0.25rem',
                       alignSelf: isUser ? 'flex-end' : 'flex-start',
@@ -971,6 +1220,7 @@ export default function WisdomChatPage() {
                     {isUser ? 'Seeker' : currentPersonaInfo?.name || 'Guide'}
                   </div>
                   <div
+                    className="wisdom-msg-text"
                     style={{
                       background: isUser ? 'rgba(212, 175, 55, 0.12)' : 'var(--surface-wood)',
                       border: isUser
@@ -979,12 +1229,14 @@ export default function WisdomChatPage() {
                       borderLeft: isUser
                         ? '1px solid rgba(212, 175, 55, 0.3)'
                         : `3px solid ${currentPersonaInfo?.color || 'var(--gold-sacred)'}`,
-                      padding: '1rem 1.25rem',
+                      padding: '0.85rem 1.15rem',
                       borderRadius: '8px',
                       color: 'var(--text-vellum)',
-                      fontSize: '0.95rem',
+                      fontSize: 'clamp(0.88rem, 2vw, 0.94rem)',
                       lineHeight: 1.6,
                       whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'anywhere',
                     }}
                   >
                     {isUser ? (
@@ -1003,14 +1255,16 @@ export default function WisdomChatPage() {
                     <div
                       style={{
                         display: 'flex',
-                        gap: '0.5rem',
-                        marginTop: '0.5rem',
+                        gap: '0.4rem',
+                        marginTop: '0.45rem',
                         flexWrap: 'wrap',
                       }}
                     >
                       {m.citations.map((c, idx) => (
                         <button
                           key={idx}
+                          type="button"
+                          suppressHydrationWarning
                           onClick={() => setInspectedCitation(c)}
                           style={{
                             background: 'rgba(212, 175, 55, 0.15)',
@@ -1037,16 +1291,19 @@ export default function WisdomChatPage() {
             {/* Active Streaming Assistant Response */}
             {isStreaming && (
               <div
+                className="wisdom-msg-bubble"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
                   alignSelf: 'flex-start',
-                  maxWidth: '80%',
+                  minWidth: 0,
                 }}
               >
                 <div
+                  className="wisdom-msg-sender"
                   style={{
                     fontSize: '0.75rem',
+                    fontWeight: 600,
                     color: currentPersonaInfo?.color || 'var(--gold-radiance)',
                     marginBottom: '0.25rem',
                   }}
@@ -1054,14 +1311,17 @@ export default function WisdomChatPage() {
                   {currentPersonaInfo?.name} (Chanting &amp; Streaming...)
                 </div>
                 <div
+                  className="wisdom-msg-text"
                   style={{
                     background: 'var(--surface-wood)',
                     borderLeft: `3px solid ${currentPersonaInfo?.color || 'var(--gold-sacred)'}`,
-                    padding: '1rem 1.25rem',
+                    padding: '0.85rem 1.15rem',
                     borderRadius: '8px',
                     color: 'var(--text-vellum)',
-                    fontSize: '0.95rem',
+                    fontSize: 'clamp(0.88rem, 2vw, 0.94rem)',
                     lineHeight: 1.6,
+                    wordBreak: 'break-word',
+                    overflowWrap: 'anywhere',
                   }}
                 >
                   <SafeMessageContent
@@ -1086,31 +1346,37 @@ export default function WisdomChatPage() {
           </div>
 
           {/* Input Box */}
-          <div
-            style={{
-              padding: '1rem 1.25rem',
-              background: 'var(--surface-stone)',
-              borderTop: '1px solid rgba(212, 175, 55, 0.15)',
-            }}
-          >
+          <div className="wisdom-input-container">
             <form
               onSubmit={(e) => handleSendMessage(e)}
-              style={{ display: 'flex', gap: '0.75rem' }}
+              style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%' }}
             >
               <input
                 type="text"
-                className="input-sacred"
+                suppressHydrationWarning
+                className="input-sacred wisdom-chat-input"
                 placeholder={`Ask ${currentPersonaInfo?.name || 'Vedic Guide'} for guidance...`}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 disabled={isStreaming}
-                style={{ flex: 1 }}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  fontSize: '0.92rem',
+                  padding: '0.65rem 0.9rem',
+                }}
               />
               <button
                 type="submit"
-                className="btn-sacred"
+                suppressHydrationWarning
+                className="btn-sacred wisdom-chat-send-btn"
                 disabled={isStreaming || !inputText.trim()}
-                style={{ padding: '0.75rem 1.5rem' }}
+                style={{
+                  padding: '0.65rem 1.35rem',
+                  fontSize: '0.88rem',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
               >
                 {isStreaming ? 'Streaming...' : 'Seek'}
               </button>
@@ -1131,7 +1397,7 @@ export default function WisdomChatPage() {
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 100,
-            padding: '1.5rem',
+            padding: '1rem',
           }}
           onClick={() => setInspectedCitation(null)}
         >
@@ -1140,21 +1406,26 @@ export default function WisdomChatPage() {
             style={{
               maxWidth: '550px',
               width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
               background: 'var(--surface-wood)',
               border: '1px solid var(--gold-sacred)',
-              padding: '2rem',
+              padding: '1.5rem',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <span className="badge">Canonical Source Grounding</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <span className="badge" style={{ whiteSpace: 'nowrap', fontSize: '0.68rem' }}>Canonical Source Grounding</span>
               <button
+                type="button"
+                suppressHydrationWarning
                 onClick={() => setInspectedCitation(null)}
                 style={{
                   background: 'transparent',
                   border: 'none',
                   color: 'var(--text-dust)',
                   cursor: 'pointer',
+                  fontSize: '0.82rem',
                 }}
               >
                 ✕ Close
@@ -1163,28 +1434,32 @@ export default function WisdomChatPage() {
             <h3
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '1.4rem',
+                fontSize: 'clamp(1.1rem, 2.5vw, 1.28rem)',
                 color: 'var(--gold-radiance)',
                 marginBottom: '0.75rem',
+                wordBreak: 'break-word',
+                lineHeight: 1.35,
               }}
             >
               {inspectedCitation.canonicalReference}
             </h3>
             <div
               style={{
-                padding: '1rem',
+                padding: '0.85rem 1rem',
                 background: 'rgba(13, 11, 8, 0.6)',
                 borderRadius: '6px',
                 borderLeft: '3px solid var(--gold-sacred)',
                 marginBottom: '1rem',
                 fontStyle: 'italic',
                 color: 'var(--text-vellum)',
-                fontSize: '0.95rem',
+                fontSize: 'clamp(0.88rem, 2vw, 0.94rem)',
+                lineHeight: 1.55,
+                wordBreak: 'break-word',
               }}
             >
               &ldquo;{inspectedCitation.chunkText}&rdquo;
             </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-dust)' }}>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-dust)', lineHeight: 1.5 }}>
               Verified canonical shastra reference cited by the wisdom persona to ground this answer
               in authentic Vedic tradition.
             </div>
