@@ -285,8 +285,11 @@ export default function QuizzesPage() {
   };
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 4rem)', padding: activeQuiz && !attemptResult ? '0.65rem 1rem 2rem' : '1.25rem 1rem 3rem' }}>
-      <div className="temple-container">
+    <div
+      className={`quiz-page-wrapper ${activeQuiz && !attemptResult ? 'active-mode' : ''}`}
+      suppressHydrationWarning
+    >
+      <div className="temple-container" style={{ width: '100%', maxWidth: '1200px', boxSizing: 'border-box' }}>
         {/* Compact Navigation when in Active Quiz Mode */}
         {activeQuiz && !attemptResult && (
           <div
@@ -297,9 +300,13 @@ export default function QuizzesPage() {
               marginBottom: '0.6rem',
               padding: '0.2rem 0.5rem',
               fontSize: '0.82rem',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
             }}
           >
             <button
+              type="button"
+              suppressHydrationWarning
               onClick={() => {
                 if (confirm('Exit assessment and return to quiz catalog?')) {
                   setActiveQuiz(null);
@@ -352,15 +359,8 @@ export default function QuizzesPage() {
             </div>
 
             {/* Banner Section - Tightly aligned without unnecessary space */}
-            <section style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  marginBottom: '0.35rem',
-                }}
-              >
+            <section className="quiz-banner">
+              <div className="quiz-banner-badge">
                 <span style={{ fontSize: '1rem' }}>🎯</span>
                 <span
                   style={{
@@ -374,64 +374,36 @@ export default function QuizzesPage() {
                   वैदिक परीक्षा • Vedic Discernment Engine
                 </span>
               </div>
-              <h1
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 'clamp(1.6rem, 3.2vw, 2.15rem)',
-                  fontWeight: 700,
-                  marginBottom: '0.45rem',
-                  lineHeight: 1.25,
-                }}
-                className="gold-gradient-text"
-              >
+              <h1 className="quiz-banner-title gold-gradient-text">
                 Vedic Quizzes &amp; Dynamic Assessments
               </h1>
-              <p
-                style={{
-                  color: 'var(--text-dust)',
-                  maxWidth: '680px',
-                  margin: '0 auto',
-                  fontSize: '0.92rem',
-                  lineHeight: 1.5,
-                }}
-              >
+              <p className="quiz-banner-desc">
                 Deepen your experiential understanding of ancient wisdom. Challenge yourself with
                 curated scriptural tests or summon an AI Sage to synthesize interactive quizzes on any
                 spiritual or pragmatic topic.
               </p>
 
               {/* Quick Action Buttons (Compact 1-2 words) */}
-              <div
-                style={{
-                  marginTop: '1.1rem',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: '0.75rem',
-                  flexWrap: 'wrap',
-                }}
-              >
+              <div className="quiz-quick-actions">
                 <button
+                  type="button"
+                  suppressHydrationWarning
                   onClick={() => setShowGenerateModal(true)}
+                  className="quiz-quick-action-btn"
                   style={{
                     background: 'linear-gradient(135deg, #D4AF37 0%, #8B6914 100%)',
                     color: '#0D0B08',
                     border: 'none',
-                    padding: '0.6rem 1.35rem',
-                    borderRadius: '24px',
-                    fontWeight: 700,
-                    fontSize: '0.88rem',
-                    cursor: 'pointer',
                     boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.45rem',
-                    transition: 'all 0.2s ease',
                   }}
                 >
                   <span>✨</span> Create Quiz
                 </button>
                 <button
+                  type="button"
+                  suppressHydrationWarning
                   onClick={() => setSelectedDomain('custom')}
+                  className="quiz-quick-action-btn"
                   style={{
                     background:
                       selectedDomain === 'custom' ? 'rgba(236, 72, 153, 0.25)' : 'rgba(20, 17, 11, 0.85)',
@@ -440,15 +412,6 @@ export default function QuizzesPage() {
                       selectedDomain === 'custom'
                         ? '1px solid rgba(236, 72, 153, 0.6)'
                         : '1px solid rgba(212, 175, 55, 0.25)',
-                    padding: '0.6rem 1.3rem',
-                    borderRadius: '24px',
-                    fontWeight: 600,
-                    fontSize: '0.88rem',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.45rem',
-                    transition: 'all 0.2s ease',
                   }}
                 >
                   <span>🪪</span> My Quizzes
@@ -518,27 +481,26 @@ export default function QuizzesPage() {
         ========================================================================== */}
         {attemptResult && (
           <div
-            className="temple-card"
+            className="temple-card quiz-results-card"
             style={{
-              maxWidth: '850px',
-              margin: '0 auto',
-              padding: '2.5rem',
               borderColor: attemptResult.passed
                 ? 'rgba(72, 187, 120, 0.4)'
                 : 'rgba(212, 175, 55, 0.3)',
             }}
           >
             {/* Header Result */}
-            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-              <div style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>
+            <div className="quiz-results-header">
+              <div className="quiz-results-icon">
                 {attemptResult.passed ? '🏆' : '📜'}
               </div>
               <h2
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '2rem',
+                  fontSize: 'clamp(1.2rem, 3.8vw, 1.85rem)',
                   color: attemptResult.passed ? '#68d391' : 'var(--text-vellum)',
-                  marginBottom: '0.5rem',
+                  marginBottom: '0.35rem',
+                  lineHeight: 1.25,
+                  wordBreak: 'break-word',
                 }}
               >
                 {attemptResult.passed
@@ -547,43 +509,21 @@ export default function QuizzesPage() {
                     : 'Acharya of Vedic Discernment'
                   : 'Sadhaka in Contemplation'}
               </h2>
-              <p style={{ color: 'var(--text-dust)', fontSize: '0.95rem' }}>
+              <p style={{ color: 'var(--text-dust)', fontSize: 'clamp(0.8rem, 1.9vw, 0.92rem)', wordBreak: 'break-word', margin: 0 }}>
                 Completed {attemptResult.quizTitle} in{' '}
                 {formatTime(attemptResult.timeSpentSeconds || 0)}
               </p>
             </div>
 
             {/* Score Ring & Stats Summary */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '1.25rem',
-                marginBottom: '2.5rem',
-              }}
-            >
-              <div
-                style={{
-                  background: 'rgba(13, 11, 8, 0.6)',
-                  border: '1px solid rgba(212, 175, 55, 0.15)',
-                  padding: '1.25rem',
-                  borderRadius: '10px',
-                  textAlign: 'center',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '0.85rem',
-                    color: 'var(--text-dust)',
-                    marginBottom: '0.25rem',
-                  }}
-                >
+            <div className="quiz-results-stats-grid">
+              <div className="quiz-stat-card">
+                <div className="quiz-stat-label">
                   Score Percentage
                 </div>
                 <div
+                  className="quiz-stat-value"
                   style={{
-                    fontSize: '2.2rem',
-                    fontWeight: 700,
                     color: attemptResult.passed ? '#48bb78' : '#e53e3e',
                   }}
                 >
@@ -591,52 +531,22 @@ export default function QuizzesPage() {
                 </div>
               </div>
 
-              <div
-                style={{
-                  background: 'rgba(13, 11, 8, 0.6)',
-                  border: '1px solid rgba(212, 175, 55, 0.15)',
-                  padding: '1.25rem',
-                  borderRadius: '10px',
-                  textAlign: 'center',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '0.85rem',
-                    color: 'var(--text-dust)',
-                    marginBottom: '0.25rem',
-                  }}
-                >
+              <div className="quiz-stat-card">
+                <div className="quiz-stat-label">
                   Correct Responses
                 </div>
-                <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--gold-sacred)' }}>
+                <div className="quiz-stat-value" style={{ color: 'var(--gold-sacred)' }}>
                   {attemptResult.score} / {attemptResult.totalQuestions}
                 </div>
               </div>
 
-              <div
-                style={{
-                  background: 'rgba(13, 11, 8, 0.6)',
-                  border: '1px solid rgba(212, 175, 55, 0.15)',
-                  padding: '1.25rem',
-                  borderRadius: '10px',
-                  textAlign: 'center',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '0.85rem',
-                    color: 'var(--text-dust)',
-                    marginBottom: '0.25rem',
-                  }}
-                >
+              <div className="quiz-stat-card quiz-stat-card-status">
+                <div className="quiz-stat-label">
                   Result Status
                 </div>
                 <div
+                  className="quiz-stat-value quiz-stat-status-text"
                   style={{
-                    fontSize: '1.5rem',
-                    fontWeight: 700,
-                    marginTop: '0.5rem',
                     color: attemptResult.passed ? '#48bb78' : '#e53e3e',
                   }}
                 >
@@ -648,28 +558,30 @@ export default function QuizzesPage() {
             {/* Weak Areas if any */}
             {attemptResult.weakAreas.length > 0 && (
               <div
+                className="quiz-weak-areas-card"
                 style={{
                   background: 'rgba(196, 107, 58, 0.1)',
                   border: '1px solid rgba(196, 107, 58, 0.3)',
-                  padding: '1.25rem',
+                  padding: 'clamp(0.85rem, 2vw, 1.25rem)',
                   borderRadius: '8px',
-                  marginBottom: '2.5rem',
+                  marginBottom: 'clamp(1.25rem, 3vw, 2.25rem)',
                 }}
               >
                 <div
                   style={{
-                    fontSize: '0.9rem',
+                    fontSize: 'clamp(0.82rem, 1.9vw, 0.9rem)',
                     fontWeight: 600,
                     color: 'var(--accent-chanakya)',
                     marginBottom: '0.5rem',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.5rem',
+                    flexWrap: 'wrap',
                   }}
                 >
                   <span>🔍</span> Areas Recommended for Deeper Reflection:
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
                   {attemptResult.weakAreas.map((w, idx) => (
                     <span
                       key={idx}
@@ -677,8 +589,8 @@ export default function QuizzesPage() {
                         background: 'rgba(13, 11, 8, 0.6)',
                         border: '1px solid rgba(196, 107, 58, 0.4)',
                         color: 'var(--text-vellum)',
-                        fontSize: '0.85rem',
-                        padding: '0.3rem 0.75rem',
+                        fontSize: 'clamp(0.76rem, 1.8vw, 0.85rem)',
+                        padding: '0.25rem 0.65rem',
                         borderRadius: '20px',
                       }}
                     >
@@ -693,25 +605,24 @@ export default function QuizzesPage() {
             <h3
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '1.35rem',
+                fontSize: 'clamp(1.05rem, 2.6vw, 1.35rem)',
                 color: 'var(--gold-sacred)',
-                marginBottom: '1.5rem',
+                marginBottom: 'clamp(0.85rem, 2vw, 1.25rem)',
                 borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
                 paddingBottom: '0.5rem',
+                wordBreak: 'break-word',
               }}
             >
               Detailed Question Analysis & Scriptural Commentary
             </h3>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.85rem, 2vw, 1.25rem)' }}>
               {attemptResult.answers.map((a, idx) => (
                 <div
                   key={idx}
+                  className="quiz-review-item"
                   style={{
-                    background: 'rgba(13, 11, 8, 0.7)',
                     border: `1px solid ${a.isCorrect ? 'rgba(72, 187, 120, 0.3)' : 'rgba(229, 62, 62, 0.3)'}`,
-                    borderRadius: '8px',
-                    padding: '1.25rem',
                   }}
                 >
                   <div
@@ -720,6 +631,8 @@ export default function QuizzesPage() {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       marginBottom: '0.75rem',
+                      flexWrap: 'wrap',
+                      gap: '0.4rem',
                     }}
                   >
                     <span
@@ -746,7 +659,7 @@ export default function QuizzesPage() {
                     )}
                   </div>
 
-                  <p style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '1rem' }}>
+                  <p style={{ fontWeight: 600, fontSize: 'clamp(0.92rem, 2vw, 1rem)', marginBottom: '1rem', lineHeight: 1.45, wordBreak: 'break-word' }}>
                     {a.questionText}
                   </p>
 
@@ -778,26 +691,21 @@ export default function QuizzesPage() {
                       return (
                         <div
                           key={oIdx}
+                          className="quiz-review-option-row"
                           style={{
                             background: bg,
                             border: `1px solid ${border}`,
                             color: color,
-                            padding: '0.65rem 1rem',
-                            borderRadius: '6px',
-                            fontSize: '0.9rem',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
                           }}
                         >
-                          <span>{opt}</span>
+                          <span style={{ wordBreak: 'break-word', flex: 1, minWidth: 0 }}>{opt}</span>
                           {isAnswer && (
-                            <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
                               CORRECT ANSWER
                             </span>
                           )}
                           {isChosen && !isAnswer && (
-                            <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
                               YOUR CHOICE
                             </span>
                           )}
@@ -811,8 +719,10 @@ export default function QuizzesPage() {
                       background: 'rgba(33, 29, 18, 0.7)',
                       borderLeft: '3px solid var(--gold-sacred)',
                       padding: '0.75rem 1rem',
-                      fontSize: '0.88rem',
+                      fontSize: 'clamp(0.82rem, 1.8vw, 0.88rem)',
                       color: 'var(--text-vellum)',
+                      lineHeight: 1.5,
+                      wordBreak: 'break-word',
                     }}
                   >
                     <span style={{ color: 'var(--gold-sacred)', fontWeight: 600 }}>
@@ -825,27 +735,24 @@ export default function QuizzesPage() {
             </div>
 
             {/* Result Action Buttons */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                gap: '1rem',
-                marginTop: '2.5rem',
-              }}
-            >
+            <div className="quiz-results-actions">
               <button
+                type="button"
+                suppressHydrationWarning
                 onClick={handleRetryWithNewQuestions}
                 disabled={isGenerating}
-                className="gold-button"
+                className="gold-button quiz-result-btn"
                 style={{ padding: '0.75rem 1.75rem', borderRadius: '24px' }}
               >
                 {isGenerating ? 'Synthesizing...' : '🎲 Retry with New Questions'}
               </button>
               <button
+                type="button"
+                suppressHydrationWarning
                 onClick={() => {
                   if (activeQuiz) handleStartQuiz(activeQuiz.id);
                 }}
+                className="quiz-result-btn"
                 style={{
                   background: 'rgba(212, 175, 55, 0.15)',
                   border: '1px solid var(--gold-sacred)',
@@ -859,11 +766,14 @@ export default function QuizzesPage() {
                 🔄 Retake Same Quiz
               </button>
               <button
+                type="button"
+                suppressHydrationWarning
                 onClick={() => {
                   setAttemptResult(null);
                   setActiveQuiz(null);
                   loadQuizzes();
                 }}
+                className="quiz-result-btn"
                 style={{
                   background: 'transparent',
                   border: '1px solid rgba(255, 255, 255, 0.25)',
@@ -886,29 +796,11 @@ export default function QuizzesPage() {
         {activeQuiz && !attemptResult && (
           <div
             ref={quizRunnerRef}
-            className="temple-card"
-            style={{
-              maxWidth: '850px',
-              margin: '0 auto',
-              padding: '1.15rem 1.5rem',
-              border: '1px solid rgba(212, 175, 55, 0.3)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-              scrollMarginTop: '85px',
-            }}
+            className="temple-card quiz-active-card"
           >
             {/* Active Quiz Header - Compact */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
-                paddingBottom: '0.65rem',
-                marginBottom: '0.85rem',
-                gap: '1rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <div className="quiz-active-header">
+              <div className="quiz-active-title-group">
                 <span
                   style={{
                     fontSize: '0.72rem',
@@ -920,27 +812,17 @@ export default function QuizzesPage() {
                     padding: '0.15rem 0.5rem',
                     borderRadius: '12px',
                     border: '1px solid rgba(212, 175, 55, 0.2)',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {DOMAIN_LABELS[activeQuiz.domain]?.label || activeQuiz.domain.toUpperCase()} •{' '}
                   {activeQuiz.difficulty.toUpperCase()}
                 </span>
-                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', margin: 0 }}>
+                <h2 className="quiz-active-title">
                   {activeQuiz.title}
                 </h2>
               </div>
-              <div
-                style={{
-                  background: 'rgba(13, 11, 8, 0.9)',
-                  border: '1px solid rgba(212, 175, 55, 0.3)',
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: '20px',
-                  fontSize: '0.85rem',
-                  color: 'var(--gold-radiance)',
-                  fontWeight: 600,
-                  flexShrink: 0,
-                }}
-              >
+              <div className="quiz-timer-pill">
                 ⏱️ {formatTime(quizTimer)}
               </div>
             </div>
@@ -951,9 +833,11 @@ export default function QuizzesPage() {
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  fontSize: '0.78rem',
+                  fontSize: 'clamp(0.72rem, 1.8vw, 0.78rem)',
                   color: 'var(--text-dust)',
                   marginBottom: '0.35rem',
+                  gap: '0.5rem',
+                  flexWrap: 'wrap',
                 }}
               >
                 <span>
@@ -1000,27 +884,12 @@ export default function QuizzesPage() {
                     📜 {activeQuiz.questions[currentQuestionIdx].sourceRef}
                   </span>
                 )}
-                <h3
-                  style={{
-                    fontSize: '1.05rem',
-                    fontWeight: 600,
-                    marginBottom: '0.85rem',
-                    lineHeight: 1.4,
-                    color: 'var(--text-vellum)',
-                  }}
-                >
+                <h3 className="quiz-question-heading">
                   {activeQuiz.questions[currentQuestionIdx].questionText}
                 </h3>
 
-                {/* Option Choices - 2x2 Grid so they fit on screen without vertical scrolling */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                    gap: '0.55rem',
-                    marginBottom: '1rem',
-                  }}
-                >
+                {/* Option Choices */}
+                <div className="quiz-options-grid">
                   {activeQuiz.questions[currentQuestionIdx].options.map((opt, oIdx) => {
                     const isSelected = selectedAnswers[currentQuestionIdx] === oIdx;
                     return (
@@ -1032,19 +901,12 @@ export default function QuizzesPage() {
                             [currentQuestionIdx]: oIdx,
                           });
                         }}
+                        className="quiz-option-item"
                         style={{
                           background: isSelected
                             ? 'rgba(212, 175, 55, 0.18)'
                             : 'rgba(13, 11, 8, 0.65)',
                           border: `1px solid ${isSelected ? 'var(--gold-sacred)' : 'rgba(212, 175, 55, 0.2)'}`,
-                          padding: '0.65rem 0.85rem',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.65rem',
-                          transition: 'all 0.18s ease',
-                          minHeight: '48px',
                           boxShadow: isSelected ? '0 0 12px rgba(212, 175, 55, 0.2)' : 'none',
                         }}
                       >
@@ -1072,9 +934,8 @@ export default function QuizzesPage() {
                           )}
                         </div>
                         <span
+                          className="quiz-option-text"
                           style={{
-                            fontSize: '0.88rem',
-                            lineHeight: 1.35,
                             color: isSelected ? 'var(--gold-radiance)' : 'var(--text-vellum)',
                             fontWeight: isSelected ? 600 : 400,
                           }}
@@ -1087,33 +948,27 @@ export default function QuizzesPage() {
                 </div>
 
                 {/* Navigation Buttons */}
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingTop: '0.5rem',
-                    borderTop: '1px solid rgba(212, 175, 55, 0.12)',
-                  }}
-                >
+                <div className="quiz-nav-bar">
                   <button
+                    type="button"
+                    suppressHydrationWarning
                     disabled={currentQuestionIdx === 0}
                     onClick={() => setCurrentQuestionIdx((i) => i - 1)}
+                    className="quiz-nav-btn"
                     style={{
                       background: 'transparent',
                       border: '1px solid rgba(212, 175, 55, 0.25)',
                       color: currentQuestionIdx === 0 ? 'var(--text-dust)' : 'var(--text-vellum)',
-                      padding: '0.5rem 1.1rem',
-                      borderRadius: '20px',
-                      fontSize: '0.85rem',
                       cursor: currentQuestionIdx === 0 ? 'not-allowed' : 'pointer',
                     }}
                   >
                     ← Previous
                   </button>
 
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     <button
+                      type="button"
+                      suppressHydrationWarning
                       onClick={() => {
                         if (confirm('Cancel assessment and return to catalog?')) {
                           setActiveQuiz(null);
@@ -1124,8 +979,8 @@ export default function QuizzesPage() {
                         border: 'none',
                         color: 'var(--text-dust)',
                         cursor: 'pointer',
-                        padding: '0.5rem 0.75rem',
-                        fontSize: '0.85rem',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: 'clamp(0.78rem, 2vw, 0.85rem)',
                       }}
                     >
                       Exit
@@ -1133,28 +988,29 @@ export default function QuizzesPage() {
 
                     {currentQuestionIdx < activeQuiz.totalQuestions - 1 ? (
                       <button
+                        type="button"
+                        suppressHydrationWarning
                         onClick={() => setCurrentQuestionIdx((i) => i + 1)}
-                        className="gold-button"
+                        className="gold-button quiz-nav-btn"
                         style={{
                           padding: '0.55rem 1.4rem',
-                          borderRadius: '20px',
-                          fontSize: '0.88rem',
                         }}
                       >
                         Next Question →
                       </button>
                     ) : (
                       <button
+                        type="button"
+                        suppressHydrationWarning
                         onClick={handleSubmitQuiz}
                         disabled={isSubmitting}
+                        className="quiz-nav-btn"
                         style={{
                           background: 'linear-gradient(135deg, #48bb78 0%, #2f855a 100%)',
                           border: 'none',
                           color: '#fff',
                           padding: '0.55rem 1.5rem',
-                          borderRadius: '20px',
                           fontWeight: 700,
-                          fontSize: '0.88rem',
                           cursor: isSubmitting ? 'wait' : 'pointer',
                           boxShadow: '0 4px 15px rgba(72, 187, 120, 0.3)',
                         }}
@@ -1175,13 +1031,15 @@ export default function QuizzesPage() {
         {!activeQuiz && !attemptResult && (
           <div>
             {/* Card Navigation Segmented Tabs */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-              <div className="card-nav-tabs" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div className="quiz-tabs-container">
+              <div className="card-nav-tabs">
                 {Object.entries(DOMAIN_LABELS).map(([domainKey, meta]) => {
                   const isActive = selectedDomain === domainKey;
                   return (
                     <button
                       key={domainKey}
+                      type="button"
+                      suppressHydrationWarning
                       onClick={() => setSelectedDomain(domainKey)}
                       className={`card-nav-tab ${isActive ? 'active' : ''}`}
                       style={{
@@ -1198,47 +1056,28 @@ export default function QuizzesPage() {
             </div>
 
             {/* Secondary Controls: Search & Difficulty */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '1rem',
-                marginBottom: '2.5rem',
-                background: 'rgba(20, 17, 11, 0.88)',
-                backdropFilter: 'blur(12px)',
-                padding: '0.85rem 1.4rem',
-                borderRadius: '12px',
-                border: '1px solid rgba(212, 175, 55, 0.22)',
-                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-              }}
-            >
+            <div className="quiz-filter-bar">
               {/* Difficulty selector */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-dust)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+              <div className="quiz-difficulty-wrapper">
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-dust)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, whiteSpace: 'nowrap' }}>
                   Difficulty:
                 </span>
-                <div style={{ display: 'flex', gap: '0.35rem', background: 'rgba(13, 11, 8, 0.7)', padding: '3px', borderRadius: '20px', border: '1px solid rgba(212, 175, 55, 0.15)' }}>
+                <div className="quiz-difficulty-pills">
                   {['all', 'beginner', 'intermediate', 'advanced'].map((diff) => {
                     const isDiffActive = selectedDifficulty === diff;
                     return (
                       <button
                         key={diff}
+                        type="button"
+                        suppressHydrationWarning
                         onClick={() => setSelectedDifficulty(diff)}
+                        className="quiz-difficulty-btn"
                         style={{
                           background: isDiffActive
                             ? 'linear-gradient(135deg, var(--gold-sacred) 0%, var(--gold-antique) 100%)'
                             : 'transparent',
                           color: isDiffActive ? '#0D0B08' : 'var(--text-vellum)',
-                          border: 'none',
-                          padding: '0.3rem 0.75rem',
-                          borderRadius: '16px',
-                          fontSize: '0.78rem',
                           fontWeight: isDiffActive ? 700 : 500,
-                          cursor: 'pointer',
-                          textTransform: 'capitalize',
-                          transition: 'all 0.2s ease',
                         }}
                       >
                         {diff}
@@ -1254,34 +1093,20 @@ export default function QuizzesPage() {
                   e.preventDefault();
                   loadQuizzes();
                 }}
-                style={{ display: 'flex', gap: '0.5rem' }}
+                className="quiz-search-form"
               >
                 <input
                   type="text"
                   placeholder="Search topics, verses..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    background: 'rgba(13, 11, 8, 0.7)',
-                    border: '1px solid rgba(212, 175, 55, 0.2)',
-                    color: 'var(--text-vellum)',
-                    padding: '0.4rem 0.85rem',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    outline: 'none',
-                  }}
+                  className="quiz-search-input"
+                  suppressHydrationWarning
                 />
                 <button
                   type="submit"
-                  style={{
-                    background: 'rgba(212, 175, 55, 0.2)',
-                    border: '1px solid var(--gold-sacred)',
-                    color: 'var(--gold-radiance)',
-                    padding: '0.4rem 0.85rem',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    cursor: 'pointer',
-                  }}
+                  suppressHydrationWarning
+                  className="quiz-search-btn"
                 >
                   Search
                 </button>
@@ -1327,6 +1152,8 @@ export default function QuizzesPage() {
                     : 'Try adjusting the domain or generate an on-the-fly AI assessment.'}
                 </p>
                 <button
+                  type="button"
+                  suppressHydrationWarning
                   onClick={() => setShowGenerateModal(true)}
                   className="gold-button"
                   style={{ padding: '0.7rem 1.8rem', borderRadius: '25px', fontWeight: 700 }}
@@ -1335,13 +1162,7 @@ export default function QuizzesPage() {
                 </button>
               </div>
             ) : (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-                  gap: '1.5rem',
-                }}
-              >
+              <div className="quiz-catalog-grid">
                 {quizzes.map((quiz) => {
                   const domainMeta = DOMAIN_LABELS[quiz.domain] || DOMAIN_LABELS.general;
                   const isUserCreated =
@@ -1354,11 +1175,8 @@ export default function QuizzesPage() {
                   return (
                     <div
                       key={quiz.id}
-                      className="temple-card temple-card-interactive"
+                      className="temple-card temple-card-interactive quiz-catalog-card"
                       style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
                         borderTop: isUserCreated ? '3px solid #ec4899' : `3px solid ${domainMeta.color}`,
                         boxShadow: isUserCreated
                           ? '0 10px 32px -4px rgba(0, 0, 0, 0.65), 0 0 20px rgba(236, 72, 153, 0.2)'
@@ -1416,7 +1234,7 @@ export default function QuizzesPage() {
                               textTransform: 'uppercase',
                               color:
                                 quiz.difficulty === 'advanced'
-                                  ? '#fc8181'
+                                   ? '#fc8181'
                                   : quiz.difficulty === 'intermediate'
                                     ? 'var(--gold-radiance)'
                                     : '#68d391',
@@ -1433,27 +1251,15 @@ export default function QuizzesPage() {
                         </div>
 
                         {/* Title */}
-                        <h3
-                          style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '1.25rem',
-                            fontWeight: 700,
-                            marginBottom: '0.75rem',
-                            color: 'var(--text-vellum)',
-                            lineHeight: 1.35,
-                          }}
-                        >
+                        <h3 className="quiz-card-title">
                           {quiz.title}
                         </h3>
 
                         {/* Description */}
                         {quiz.description && (
                           <p
+                            className="quiz-card-desc"
                             style={{
-                              color: 'var(--text-dust)',
-                              fontSize: '0.9rem',
-                              lineHeight: 1.6,
-                              marginBottom: '1.25rem',
                               display: '-webkit-box',
                               WebkitLineClamp: 3,
                               WebkitBoxOrient: 'vertical',
@@ -1500,14 +1306,18 @@ export default function QuizzesPage() {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           borderTop: '1px solid rgba(212, 175, 55, 0.15)',
-                          paddingTop: '1.25rem',
+                          paddingTop: '1.15rem',
                           marginTop: '0.5rem',
+                          flexWrap: 'wrap',
+                          gap: '0.5rem',
                         }}
                       >
                         <span style={{ fontSize: '0.82rem', color: 'var(--text-dust)', fontWeight: 600 }}>
                           📝 {quiz.questionCount} Questions
                         </span>
                         <button
+                          type="button"
+                          suppressHydrationWarning
                           onClick={(e) => {
                             e.stopPropagation();
                             handleStartQuiz(quiz.id);
@@ -1555,16 +1365,7 @@ export default function QuizzesPage() {
             }}
           >
             <div
-              className="temple-card"
-              style={{
-                maxWidth: '560px',
-                width: '100%',
-                maxHeight: '92vh',
-                overflowY: 'auto',
-                padding: '1.25rem 1.6rem',
-                border: '1px solid var(--gold-sacred)',
-                boxShadow: '0 8px 40px rgba(212, 175, 55, 0.25)',
-              }}
+              className="temple-card quiz-modal-card"
             >
               <div
                 style={{
@@ -1593,6 +1394,8 @@ export default function QuizzesPage() {
                   </div>
                 </div>
                 <button
+                  type="button"
+                  suppressHydrationWarning
                   onClick={() => setShowGenerateModal(false)}
                   style={{
                     background: 'transparent',
@@ -1632,6 +1435,7 @@ export default function QuizzesPage() {
                     placeholder="e.g. Sthitaprajna, Tridoshas in Winter, Chanakya's Four Expedients..."
                     value={genTopic}
                     onChange={(e) => setGenTopic(e.target.value)}
+                    suppressHydrationWarning
                     style={{
                       width: '100%',
                       background: 'rgba(13, 11, 8, 0.9)',
@@ -1642,19 +1446,13 @@ export default function QuizzesPage() {
                       fontSize: '0.88rem',
                       outline: 'none',
                       boxShadow: '0 0 10px rgba(212, 175, 55, 0.1)',
+                      boxSizing: 'border-box',
                     }}
                   />
                 </div>
 
-                {/* 2-Column Grid: Domain Picker & Guru Picker side-by-side to save vertical space */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '0.65rem',
-                    marginBottom: '0.75rem',
-                  }}
-                >
+                {/* 2-Column Grid: Domain Picker & Guru Picker */}
+                <div className="quiz-modal-grid-2col">
                   <div>
                     <label
                       style={{
@@ -1678,6 +1476,7 @@ export default function QuizzesPage() {
                         borderRadius: '6px',
                         fontSize: '0.82rem',
                         outline: 'none',
+                        boxSizing: 'border-box',
                       }}
                     >
                       <option value="gita">🏹 Bhagavad Gita</option>
@@ -1723,6 +1522,7 @@ export default function QuizzesPage() {
                         borderRadius: '6px',
                         fontSize: '0.82rem',
                         outline: 'none',
+                        boxSizing: 'border-box',
                       }}
                     >
                       <option value="">All Gurus</option>
@@ -1736,14 +1536,7 @@ export default function QuizzesPage() {
                 </div>
 
                 {/* Difficulty & Count */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '0.65rem',
-                    marginBottom: '1rem',
-                  }}
-                >
+                <div className="quiz-modal-grid-2col" style={{ marginBottom: '1rem' }}>
                   <div>
                     <label
                       style={{
@@ -1767,6 +1560,7 @@ export default function QuizzesPage() {
                         borderRadius: '6px',
                         fontSize: '0.82rem',
                         outline: 'none',
+                        boxSizing: 'border-box',
                       }}
                     >
                       <option value="beginner">Beginner (Sadhaka)</option>
@@ -1791,10 +1585,11 @@ export default function QuizzesPage() {
                         <button
                           key={num}
                           type="button"
+                          suppressHydrationWarning
                           onClick={() => setGenCount(num)}
                           style={{
                             flex: 1,
-                            minWidth: '32px',
+                            minWidth: '28px',
                             padding: '0.25rem 0.2rem',
                             borderRadius: '5px',
                             border: `1px solid ${genCount === num ? 'var(--gold-sacred)' : 'rgba(212, 175, 55, 0.25)'}`,
@@ -1825,9 +1620,10 @@ export default function QuizzesPage() {
                 </div>
 
                 {/* Modal Buttons */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <button
                     type="button"
+                    suppressHydrationWarning
                     onClick={() => setShowGenerateModal(false)}
                     style={{
                       background: 'transparent',
@@ -1844,6 +1640,7 @@ export default function QuizzesPage() {
 
                   <button
                     type="submit"
+                    suppressHydrationWarning
                     disabled={isGenerating || !genTopic.trim()}
                     className="gold-button"
                     style={{
